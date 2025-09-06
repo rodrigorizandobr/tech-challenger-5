@@ -1,0 +1,124 @@
+version: '3.8'
+
+services:
+  # Main API service
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: decision-ai-api
+    ports:
+      - "8000:8000"
+    environment:
+      - API_HOST=0.0.0.0
+      - API_PORT=8000
+      - MODEL_PATH=models/model.joblib
+      - METADATA_PATH=models/training_metadata.json
+      - LOG_LEVEL=INFO
+      - DEBUG=false
+    volumes:
+      - ./logs:/app/logs
+      - ./reports:/app/reports
+      - ./data:/app/data
+    networks:
+      - decision-ai-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    depends_on:
+      - monitor
+
+  # Monitoring service
+  monitor:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: decision-ai-monitor
+    environment:
+      - PYTHONPATH=/app
+      - LOG_LEVEL=INFO
+    volumes:
+      - ./logs:/app/logs
+      - ./reports:/app/reports
+      - ./data:/app/data
+    networks:
+      - decision-ai-network
+    restart: unless-stopped
+    command: >
+      sh -c "
+        while true; do
+          echo 'Running drift monitoring...'
+          python -m monitor.generate_report \
+            --reference-data data/sample_candidates.csv \
+            --predictions-log logs/predictions.csv \
+            --reports-dir reports \
+            --window-size 100
+          echo 'Drift monitoring completed. Sleeping for 1 hour...'
+          sleep 3600
+        done
+      "
+
+  # Development service (optional)
+  dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder
+    container_name: decision-ai-dev
+    ports:
+      - "8001:8000"
+    environment:
+      - API_HOST=0.0.0.0
+      - API_PORT=8000
+      - DEBUG=true
+      - LOG_LEVEL=DEBUG
+    volumes:
+      - .:/app
+      - ./logs:/app/logs
+      - ./reports:/app/reports
+    networks:
+      - decision-ai-network
+    command: >
+      sh -c "
+        pip install -e .
+        uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+      "
+    profiles:
+      - dev
+
+  # Nginx reverse proxy (optional for production)
+  nginx:
+    image: nginx:alpine
+    container_name: decision-ai-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    networks:
+      - decision-ai-network
+    restart: unless-stopped
+    depends_on:
+      - api
+    profiles:
+      - production
+
+networks:
+  decision-ai-network:
+    driver: bridge
+    name: decision-ai-network
+
+volumes:
+  logs:
+    driver: local
+  reports:
+    driver: local
+  models:
+    driver: local

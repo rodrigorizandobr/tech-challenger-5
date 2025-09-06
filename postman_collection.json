@@ -1,0 +1,342 @@
+{
+	"info": {
+		"_postman_id": "decision-ai-recruitment",
+		"name": "Decision AI - Recruitment System",
+		"description": "API collection for testing the Decision AI recruitment and candidate-job matching system",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "decision-ai"
+	},
+	"item": [
+		{
+			"name": "Health Check",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response has required fields\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('status');",
+							"    pm.expect(jsonData).to.have.property('model_loaded');",
+							"    pm.expect(jsonData).to.have.property('timestamp');",
+							"    pm.expect(jsonData).to.have.property('version');",
+							"    pm.expect(jsonData).to.have.property('uptime_seconds');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/health",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"health"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Predict - Good Match Example",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response has prediction fields\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('match_probability');",
+							"    pm.expect(jsonData).to.have.property('match_label');",
+							"    pm.expect(jsonData).to.have.property('confidence');",
+							"    pm.expect(jsonData).to.have.property('factors');",
+							"    pm.expect(jsonData).to.have.property('recommendation');",
+							"    pm.expect(jsonData).to.have.property('timestamp');",
+							"});",
+							"",
+							"pm.test(\"Match probability is valid\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.match_probability).to.be.at.least(0);",
+							"    pm.expect(jsonData.match_probability).to.be.at.most(1);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"candidate\": {\n        \"age\": 28,\n        \"education_level\": \"bachelor\",\n        \"years_experience\": 5,\n        \"skills\": [\"python\", \"machine learning\", \"sql\", \"pandas\", \"scikit-learn\"],\n        \"previous_companies\": 2,\n        \"salary_expectation\": 85000,\n        \"location\": \"São Paulo\",\n        \"remote_work\": true,\n        \"availability_days\": 30\n    },\n    \"job\": {\n        \"required_experience\": \"mid\",\n        \"required_skills\": [\"python\", \"sql\", \"machine learning\", \"pandas\"],\n        \"salary_range_min\": 75000,\n        \"salary_range_max\": 95000,\n        \"location\": \"São Paulo\",\n        \"remote_allowed\": true,\n        \"urgency_days\": 45\n    }\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/predict",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"predict"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Predict - Poor Match Example",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response indicates poor match\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.match_probability).to.be.below(0.5);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"candidate\": {\n        \"age\": 22,\n        \"education_level\": \"high_school\",\n        \"years_experience\": 1,\n        \"skills\": [\"excel\", \"word\"],\n        \"previous_companies\": 0,\n        \"salary_expectation\": 150000,\n        \"location\": \"Manaus\",\n        \"remote_work\": false,\n        \"availability_days\": 90\n    },\n    \"job\": {\n        \"required_experience\": \"senior\",\n        \"required_skills\": [\"python\", \"machine learning\", \"deep learning\", \"tensorflow\", \"pytorch\"],\n        \"salary_range_min\": 80000,\n        \"salary_range_max\": 120000,\n        \"location\": \"São Paulo\",\n        \"remote_allowed\": false,\n        \"urgency_days\": 15\n    }\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/predict",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"predict"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Predict - Remote Work Example",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"candidate\": {\n        \"age\": 32,\n        \"education_level\": \"master\",\n        \"years_experience\": 8,\n        \"skills\": [\"javascript\", \"react\", \"node.js\", \"aws\", \"docker\"],\n        \"previous_companies\": 3,\n        \"salary_expectation\": 110000,\n        \"location\": \"Recife\",\n        \"remote_work\": true,\n        \"availability_days\": 15\n    },\n    \"job\": {\n        \"required_experience\": \"senior\",\n        \"required_skills\": [\"javascript\", \"react\", \"node.js\", \"aws\"],\n        \"salary_range_min\": 100000,\n        \"salary_range_max\": 130000,\n        \"location\": \"Remote\",\n        \"remote_allowed\": true,\n        \"urgency_days\": 30\n    }\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/predict",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"predict"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Metrics",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response has metrics fields\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('total_predictions');",
+							"    pm.expect(jsonData).to.have.property('avg_match_probability');",
+							"    pm.expect(jsonData).to.have.property('predictions_last_24h');",
+							"    pm.expect(jsonData).to.have.property('drift_detected');",
+							"    pm.expect(jsonData).to.have.property('system_health');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/metrics",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"metrics"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Drift Report",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/drift-report",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"drift-report"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "API Documentation",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/docs",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"docs"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Root Endpoint",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Predict - Invalid Request (Validation Error)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 422\", function () {",
+							"    pm.response.to.have.status(422);",
+							"});",
+							"",
+							"pm.test(\"Response contains validation error\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('detail');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"candidate\": {\n        \"age\": -5,\n        \"education_level\": \"invalid_level\",\n        \"years_experience\": -1,\n        \"skills\": [],\n        \"previous_companies\": -1,\n        \"salary_expectation\": -1000,\n        \"location\": \"\",\n        \"remote_work\": \"not_boolean\",\n        \"availability_days\": 0\n    },\n    \"job\": {\n        \"required_experience\": \"invalid_level\",\n        \"required_skills\": [],\n        \"salary_range_min\": -1000,\n        \"salary_range_max\": -500,\n        \"location\": \"\",\n        \"remote_allowed\": \"not_boolean\",\n        \"urgency_days\": 0\n    }\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/predict",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"predict"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Set base URL if not already set",
+					"if (!pm.environment.get('base_url')) {",
+					"    pm.environment.set('base_url', 'http://localhost:8000');",
+					"}"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Global test to check response time",
+					"pm.test(\"Response time is less than 5000ms\", function () {",
+					"    pm.expect(pm.response.responseTime).to.be.below(5000);",
+					"});"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000",
+			"type": "string"
+		}
+	]
+}
