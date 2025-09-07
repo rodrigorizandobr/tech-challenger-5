@@ -247,7 +247,7 @@ class ModelTrainer:
             pipeline,
             param_grids[model_name],
             cv=cv,
-            scoring='f1',
+            scoring='f1_macro',
             n_jobs=-1,
             verbose=1
         )
@@ -297,7 +297,7 @@ class ModelTrainer:
         
         # Cross-validation scores
         cv_scores = cross_val_score(
-            model, X_test, y_test, cv=3, scoring='f1'
+            model, X_test, y_test, cv=3, scoring='f1_macro'
         )
         metrics['cv_f1_mean'] = cv_scores.mean()
         metrics['cv_f1_std'] = cv_scores.std()
