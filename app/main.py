@@ -26,7 +26,7 @@ from src.schema import (
 from src.features import engineer_features
 
 
-# Global variables for model and metrics
+# Variáveis globais para modelo e métricas
 model = None
 model_metadata = {}
 app_start_time = datetime.now()
@@ -41,23 +41,23 @@ metrics_cache = {
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Application lifespan manager."""
-    # Startup
-    logger.info("Starting up FastAPI application")
+    """Gerenciador do ciclo de vida da aplicação."""
+    # Inicialização
+    logger.info("Iniciando aplicação FastAPI")
     await load_model()
     
-    # Create necessary directories
+    # Criando diretórios necessários
     Path("logs").mkdir(exist_ok=True)
     Path("reports").mkdir(exist_ok=True)
     
     yield
     
-    # Shutdown
-    logger.info("Shutting down FastAPI application")
+    # Finalização
+    logger.info("Finalizando aplicação FastAPI")
     await save_prediction_logs()
 
 
-# Create FastAPI app
+# Cria aplicação FastAPI
 app = FastAPI(
     title="Decision AI - Recruitment System",
     description="AI-powered recruitment and candidate-job matching system",
@@ -67,7 +67,7 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# Add middleware
+# Adiciona middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # Configure appropriately for production
@@ -81,13 +81,13 @@ app.add_middleware(
     allowed_hosts=["*"]  # Configure appropriately for production
 )
 
-# Mount static files for serving reports
+# Monta arquivos estáticos para servir relatórios
 if Path("reports").exists():
     app.mount("/reports", StaticFiles(directory="reports"), name="reports")
 
 
 async def load_model() -> None:
-    """Load the trained model and metadata."""
+    """Carrega o modelo treinado e metadados."""
     global model, model_metadata
     
     try:
@@ -95,29 +95,29 @@ async def load_model() -> None:
         metadata_path = os.getenv("METADATA_PATH", "models/training_metadata.json")
         
         if not Path(model_path).exists():
-            logger.warning(f"Model file not found at {model_path}")
+            logger.warning(f"Arquivo do modelo não encontrado em {model_path}")
             model = None
             return
         
-        # Load model
+        # Carrega modelo
         model = joblib.load(model_path)
-        logger.info(f"Model loaded successfully from {model_path}")
+        logger.info(f"Modelo carregado com sucesso de {model_path}")
         
-        # Load metadata if available
+        # Carrega metadados se disponível
         if Path(metadata_path).exists():
             import json
             with open(metadata_path, 'r') as f:
                 model_metadata = json.load(f)
-            logger.info(f"Model metadata loaded from {metadata_path}")
+            logger.info(f"Metadados do modelo carregados de {metadata_path}")
         
     except Exception as e:
-        logger.error(f"Error loading model: {e}")
+        logger.error(f"Erro ao carregar modelo: {e}")
         model = None
         model_metadata = {}
 
 
 async def save_prediction_logs() -> None:
-    """Save prediction logs to CSV file."""
+    """Salva logs de predição em arquivo CSV."""
     try:
         if not prediction_logs:
             return
@@ -125,7 +125,7 @@ async def save_prediction_logs() -> None:
         logs_path = Path("logs/predictions.csv")
         logs_path.parent.mkdir(exist_ok=True)
         
-        # Convert logs to DataFrame
+        # Converte logs para DataFrame
         log_data = []
         for log in prediction_logs:
             log_dict = {
@@ -137,41 +137,41 @@ async def save_prediction_logs() -> None:
                 'match_label': log.prediction.match_label,
                 'confidence': log.prediction.confidence,
                 'recommendation': log.prediction.recommendation,
-                # Flatten candidate data
+                # Achata dados do candidato
                 **{f'candidate_{k}': v for k, v in log.candidate_data.items()},
-                # Flatten job data
+                # Achata dados da vaga
                 **{f'job_{k}': v for k, v in log.job_data.items()}
             }
             log_data.append(log_dict)
         
         df = pd.DataFrame(log_data)
         
-        # Append to existing file or create new one
+        # Anexa ao arquivo existente ou cria novo
         if logs_path.exists():
             existing_df = pd.read_csv(logs_path)
             df = pd.concat([existing_df, df], ignore_index=True)
         
         df.to_csv(logs_path, index=False)
-        logger.info(f"Saved {len(prediction_logs)} prediction logs to {logs_path}")
+        logger.info(f"Salvos {len(prediction_logs)} logs de predição em {logs_path}")
         
     except Exception as e:
-        logger.error(f"Error saving prediction logs: {e}")
+        logger.error(f"Erro ao salvar logs de predição: {e}")
 
 
 def update_metrics(prediction: PredictionResponse) -> None:
-    """Update application metrics."""
+    """Atualiza métricas da aplicação."""
     global metrics_cache
     
     metrics_cache['total_predictions'] += 1
     
-    # Update average match probability (running average)
+    # Atualiza probabilidade média de match (média móvel)
     current_avg = metrics_cache['avg_match_probability']
     total_preds = metrics_cache['total_predictions']
     
     new_avg = ((current_avg * (total_preds - 1)) + prediction.match_probability) / total_preds
     metrics_cache['avg_match_probability'] = new_avg
     
-    # Count predictions in last 24 hours
+    # Conta predições nas últimas 24 horas
     cutoff_time = datetime.now() - timedelta(hours=24)
     recent_predictions = [
         log for log in prediction_logs 
@@ -182,8 +182,8 @@ def update_metrics(prediction: PredictionResponse) -> None:
 
 
 def create_prediction_features(request: PredictionRequest) -> pd.DataFrame:
-    """Convert prediction request to feature DataFrame."""
-    # Convert request to dictionary format similar to training data
+    """Converte requisição de predição para DataFrame de features."""
+    # Converte requisição para formato de dicionário similar aos dados de treinamento
     data = {
         'age': request.candidate.age,
         'education_level': request.candidate.education_level.value,
@@ -203,7 +203,7 @@ def create_prediction_features(request: PredictionRequest) -> pd.DataFrame:
         'remote_allowed': request.job.remote_allowed,
         'urgency_days': request.job.urgency_days,
         
-        # Add derived features that will be calculated by feature engineering
+        # Adiciona features derivadas que serão calculadas pela engenharia de features
         'education_numeric': {
             'high_school': 1, 'bachelor': 2, 'master': 3, 'phd': 4
         }[request.candidate.education_level.value],
@@ -213,10 +213,10 @@ def create_prediction_features(request: PredictionRequest) -> pd.DataFrame:
         }[request.job.required_experience.value]
     }
     
-    # Create DataFrame
+    # Cria DataFrame
     df = pd.DataFrame([data])
     
-    # Apply feature engineering
+    # Aplica engenharia de features
     df_engineered = engineer_features(df)
     
     return df_engineered
@@ -224,21 +224,23 @@ def create_prediction_features(request: PredictionRequest) -> pd.DataFrame:
 
 def extract_model_features(df: pd.DataFrame) -> pd.DataFrame:
     """Extract features used by the model (from training metadata)."""
-    # Use exact features from training metadata
+    # Usa features exatas que o modelo espera
     feature_cols = [
         'age', 'education_numeric', 'years_experience', 'skills_count',
         'skills_match_ratio', 'previous_companies', 'salary_expectation',
         'salary_fit', 'location_match', 'remote_compatibility',
-        'availability_urgency_ratio', 'experience_level_numeric'
+        'availability_urgency_ratio', 'experience_level_numeric', 'skill_diversity',
+        'rare_skills_bonus', 'salary_position', 'salary_expectation_ratio',
+        'experience_education_ratio', 'salary_range_width', 'company_stability'
     ]
     
-    # Filter to available columns
+    # Filtra para colunas disponíveis
     available_cols = [col for col in feature_cols if col in df.columns]
     
     if len(available_cols) < len(feature_cols):
         missing_cols = set(feature_cols) - set(available_cols)
         logger.warning(f"Missing feature columns: {missing_cols}")
-        # Fill missing columns with default values
+        # Preenche colunas faltantes com valores padrão
         for col in missing_cols:
             df[col] = 0.0
         available_cols = feature_cols
@@ -248,13 +250,13 @@ def extract_model_features(df: pd.DataFrame) -> pd.DataFrame:
 
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
-    """Log all requests."""
+    """Registra todas as requisições."""
     start_time = time.time()
     
-    # Process request
+    # Processa requisição
     response = await call_next(request)
     
-    # Log request details
+    # Registra detalhes da requisição
     process_time = time.time() - start_time
     logger.info(
         f"{request.method} {request.url.path} - "
@@ -267,17 +269,19 @@ async def log_requests(request: Request, call_next):
 
 @app.get("/", response_class=HTMLResponse)
 async def root():
-    """Root endpoint with API information."""
-    html_content = """
+    """Endpoint raiz com informações da API."""
+    model_status = "Yes" if model is not None else "No"
+    
+    html_content = f"""
     <!DOCTYPE html>
     <html>
     <head>
         <title>Decision AI - Recruitment System</title>
         <style>
-            body { font-family: Arial, sans-serif; margin: 40px; }
-            .header { color: #2c3e50; }
-            .endpoint { background: #f8f9fa; padding: 10px; margin: 10px 0; border-radius: 5px; }
-            .method { color: #27ae60; font-weight: bold; }
+            body {{ font-family: Arial, sans-serif; margin: 40px; }}
+            .header {{ color: #2c3e50; }}
+            .endpoint {{ background: #f8f9fa; padding: 10px; margin: 10px 0; border-radius: 5px; }}
+            .method {{ color: #27ae60; font-weight: bold; }}
         </style>
     </head>
     <body>
@@ -306,16 +310,14 @@ async def root():
         <p>Version: <strong>1.0.0</strong></p>
     </body>
     </html>
-    """.format(
-        model_status="Yes" if model is not None else "No"
-    )
+    """
     
     return HTMLResponse(content=html_content)
 
 
 @app.get("/health", response_model=HealthResponse)
 async def health_check():
-    """Health check endpoint."""
+    """Endpoint de verificação de saúde."""
     uptime = (datetime.now() - app_start_time).total_seconds()
     
     return HealthResponse(
@@ -332,29 +334,29 @@ async def predict(
     request: PredictionRequest, 
     background_tasks: BackgroundTasks
 ) -> PredictionResponse:
-    """Make a prediction for candidate-job match."""
+    """Faz uma predição para combinação candidato-vaga."""
     start_time = time.time()
     request_id = str(uuid.uuid4())
     
     try:
-        # Check if model is loaded
+        # Verifica se o modelo está carregado
         if model is None:
             raise HTTPException(
                 status_code=503, 
-                detail="Model not available. Please check model loading."
+                detail="Modelo não disponível. Verifique o carregamento do modelo."
             )
         
-        # Create features from request
+        # Cria features a partir da requisição
         df_features = create_prediction_features(request)
         
-        # Extract model features
+        # Extrai features do modelo
         X = extract_model_features(df_features)
         
-        # Make prediction
+        # Makes prediction
         prediction_proba = model.predict_proba(X)[0]
         prediction_label = model.predict(X)[0]
         
-        # Get probability for positive class (good_match)
+        # Gets probability for positive class (good_match)
         if hasattr(model, 'classes_'):
             classes = model.classes_
             if 'good_match' in classes:
@@ -365,10 +367,10 @@ async def predict(
         else:
             match_probability = prediction_proba[1] if len(prediction_proba) > 1 else prediction_proba[0]
         
-        # Calculate confidence (max probability)
+        # Calculates confidence (maximum probability)
         confidence = float(np.max(prediction_proba))
         
-        # Calculate contributing factors
+        # Calculates contributing factors
         factors = {
             'skills_match': float(df_features['skills_match_ratio'].iloc[0]),
             'experience_match': min(1.0, float(df_features['years_experience'].iloc[0]) / 5.0),
@@ -377,17 +379,17 @@ async def predict(
             'remote_compatibility': float(df_features['remote_compatibility'].iloc[0])
         }
         
-        # Generate recommendation
+        # Generates recommendation
         if match_probability > 0.8:
-            recommendation = "Excellent match - strongly recommend for interview"
+            recommendation = "Excelente combinação - fortemente recomendado para entrevista"
         elif match_probability > 0.65:
-            recommendation = "Good match - recommend for interview"
+            recommendation = "Boa combinação - recomendado para entrevista"
         elif match_probability > 0.4:
-            recommendation = "Moderate match - consider for interview"
+            recommendation = "Combinação moderada - considerar para entrevista"
         else:
-            recommendation = "Poor match - not recommended"
+            recommendation = "Combinação ruim - não recomendado"
         
-        # Create response
+        # Creates response
         response = PredictionResponse(
             match_probability=float(match_probability),
             match_label=prediction_label,
@@ -397,10 +399,10 @@ async def predict(
             timestamp=datetime.now()
         )
         
-        # Calculate processing time
-        processing_time = (time.time() - start_time) * 1000  # Convert to milliseconds
+        # Calculates processing time
+        processing_time = (time.time() - start_time) * 1000  # Converte para milissegundos
         
-        # Create prediction log
+        # Creates prediction log
         prediction_log = PredictionLog(
             request_id=request_id,
             candidate_data=request.candidate.dict(),
@@ -411,18 +413,18 @@ async def predict(
             model_version=model_metadata.get('best_model_name', 'unknown')
         )
         
-        # Store log and update metrics
+        # Stores log and updates metrics
         prediction_logs.append(prediction_log)
         update_metrics(response)
         
         # Schedule background task to save logs periodically
-        if len(prediction_logs) % 10 == 0:  # Save every 10 predictions
+        if len(prediction_logs) % 10 == 0:  # Salva a cada 10 predições
             background_tasks.add_task(save_prediction_logs)
         
         logger.info(
-            f"Prediction completed - ID: {request_id}, "
-            f"Probability: {match_probability:.3f}, "
-            f"Time: {processing_time:.1f}ms"
+            f"Predição concluída - ID: {request_id}, "
+            f"Probabilidade: {match_probability:.3f}, "
+            f"Tempo: {processing_time:.1f}ms"
         )
         
         return response
@@ -430,18 +432,18 @@ async def predict(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Prediction error: {e}")
+        logger.error(f"Erro na predição: {e}")
         raise HTTPException(
             status_code=500,
-            detail=f"Internal server error during prediction: {str(e)}"
+            detail=f"Erro interno do servidor durante predição: {str(e)}"
         )
 
 
 @app.get("/metrics", response_model=MetricsResponse)
 async def get_metrics():
-    """Get system metrics."""
+    """Obter métricas do sistema."""
     try:
-        # Check for drift (simplified check)
+        # Check drift (simplified verification)
         drift_detected = False
         if len(prediction_logs) > 50:
             recent_probs = [log.prediction.match_probability for log in prediction_logs[-50:]]
@@ -458,24 +460,24 @@ async def get_metrics():
             predictions_last_24h=metrics_cache['predictions_24h'],
             model_accuracy=model_metadata.get('best_score'),
             drift_detected=drift_detected,
-            last_retrain=None,  # Would be set when retraining is implemented
+            last_retrain=None,  # Seria definido quando o retreinamento for implementado
             system_health="healthy" if model is not None else "unhealthy"
         )
         
     except Exception as e:
-        logger.error(f"Error getting metrics: {e}")
-        raise HTTPException(status_code=500, detail="Error retrieving metrics")
+        logger.error(f"Erro ao obter métricas: {e}")
+        raise HTTPException(status_code=500, detail="Erro ao recuperar métricas")
 
 
 @app.get("/drift-report")
 async def get_drift_report():
-    """Serve the data drift report."""
+    """Servir o relatório de drift de dados."""
     report_path = Path("reports/drift.html")
     
     if not report_path.exists():
         raise HTTPException(
             status_code=404, 
-            detail="Drift report not found. Run the monitoring script to generate it."
+            detail="Relatório de drift não encontrado. Execute o script de monitoramento para gerá-lo."
         )
     
     return FileResponse(
@@ -487,14 +489,19 @@ async def get_drift_report():
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
-    """Global exception handler."""
-    logger.error(f"Unhandled exception: {exc}")
+    """Handler global de exceções."""
+    logger.error(f"Exceção não tratada: {exc}")
     
-    return ErrorResponse(
-        error="internal_server_error",
-        message="An unexpected error occurred",
-        details={"path": str(request.url.path)},
-        timestamp=datetime.now()
+    from fastapi.responses import JSONResponse
+    
+    return JSONResponse(
+        status_code=500,
+        content={
+            "error": "internal_server_error",
+            "message": "Ocorreu um erro inesperado",
+            "details": {"path": str(request.url.path)},
+            "timestamp": datetime.now().isoformat()
+        }
     )
 
 

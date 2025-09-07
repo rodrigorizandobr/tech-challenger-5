@@ -23,8 +23,8 @@ from sklearn.metrics import (
 )
 from sklearn.calibration import CalibratedClassifierCV
 
-from src.data import load_and_validate_data, split_data
-from src.features import (
+from data import load_and_validate_data, split_data
+from features import (
     create_feature_engineering_pipeline, engineer_features,
     get_feature_names, save_preprocessor
 )
@@ -46,12 +46,12 @@ class ModelTrainer:
         self.feature_pipeline = None
         self.training_metadata = {}
         
-        # Initialize models
+        # Inicializa modelos
         self._initialize_models()
     
     def _initialize_models(self) -> None:
         """Initialize candidate models for training."""
-        logger.info("Initializing candidate models")
+        logger.info("Inicializando modelos candidatos")
         
         self.models = {
             'random_forest': RandomForestClassifier(
@@ -94,13 +94,13 @@ class ModelTrainer:
         """
         logger.info(f"Loading data from {data_path}")
         
-        # Load and validate data
+        # Carrega e valida dados
         df = load_and_validate_data(data_path)
         
-        # Engineer features
+        # Engenharia de features
         df_engineered = engineer_features(df)
         
-        # Split data
+        # Divide dados
         train_df, test_df = split_data(df_engineered, test_size=0.2, random_state=self.random_state)
         
         logger.info(f"Data preparation completed. Train: {len(train_df)}, Test: {len(test_df)}")
@@ -116,7 +116,7 @@ class ModelTrainer:
         Returns:
             Tuple of (features, target)
         """
-        # Define feature columns for training
+        # Define colunas de features para treinamento
         feature_cols = [
             'age', 'education_numeric', 'years_experience', 'skills_count',
             'skills_match_ratio', 'previous_companies', 'salary_expectation',
@@ -127,7 +127,7 @@ class ModelTrainer:
             'salary_range_width', 'company_stability'
         ]
         
-        # Filter to available columns
+        # Filtra para colunas disponíveis
         available_cols = [col for col in feature_cols if col in df.columns]
         
         if len(available_cols) < len(feature_cols):
@@ -159,28 +159,28 @@ class ModelTrainer:
         """
         logger.info(f"Training {model_name} model")
         
-        # Prepare features and target
+        # Prepara features e target
         X_train, y_train = self.get_feature_target_split(train_df)
         
-        # Get base model
+        # Obtém modelo base
         if model_name not in self.models:
             raise ValueError(f"Unknown model: {model_name}")
         
         base_model = self.models[model_name]
         
-        # Create pipeline with preprocessing
+        # Cria pipeline com pré-processamento
         pipeline = Pipeline([
             ('model', base_model)
         ])
         
-        # Hyperparameter tuning
+        # Ajuste de hiperparâmetros
         if use_grid_search:
             pipeline = self._tune_hyperparameters(pipeline, X_train, y_train, model_name)
         
-        # Train final model
+        # Treina modelo final
         pipeline.fit(X_train, y_train)
         
-        # Calibrate probabilities
+        # Calibra probabilidades
         calibrated_pipeline = CalibratedClassifierCV(
             pipeline, method='isotonic', cv=3
         )
@@ -210,7 +210,7 @@ class ModelTrainer:
         """
         logger.info(f"Tuning hyperparameters for {model_name}")
         
-        # Define parameter grids (optimized for speed)
+        # Define grades de parâmetros (otimizadas para velocidade)
         param_grids = {
             'random_forest': {
                 'model__n_estimators': [50, 100],
@@ -240,7 +240,7 @@ class ModelTrainer:
             logger.warning(f"No parameter grid defined for {model_name}")
             return pipeline
         
-        # Perform grid search
+        # Executa busca em grade
         cv = StratifiedKFold(n_splits=3, shuffle=True, random_state=self.random_state)
         
         grid_search = GridSearchCV(
@@ -277,14 +277,14 @@ class ModelTrainer:
         """
         logger.info(f"Evaluating {model_name} model")
         
-        # Prepare test data
+        # Prepara dados de teste
         X_test, y_test = self.get_feature_target_split(test_df)
         
-        # Make predictions
+        # Faz predições
         y_pred = model.predict(X_test)
         y_pred_proba = model.predict_proba(X_test)[:, 1]  # Probability of positive class
         
-        # Calculate metrics
+        # Calcula métricas
         metrics = {
             'accuracy': accuracy_score(y_test, y_pred),
             'precision': precision_score(y_test, y_pred, pos_label='good_match'),
@@ -295,7 +295,7 @@ class ModelTrainer:
             'classification_report': classification_report(y_test, y_pred, output_dict=True)
         }
         
-        # Cross-validation scores
+        # Scores de validação cruzada
         cv_scores = cross_val_score(
             model, X_test, y_test, cv=3, scoring='f1_macro'
         )
@@ -323,7 +323,7 @@ class ModelTrainer:
         Returns:
             Tuple of (best_model, evaluation_metrics)
         """
-        logger.info("Training and selecting best model")
+        logger.info("Treinando e selecionando melhor modelo")
         
         best_model = None
         best_score = 0.0
@@ -334,19 +334,19 @@ class ModelTrainer:
             try:
                 logger.info(f"Training {model_name}...")
                 
-                # Train model
+                # Treina modelo
                 model = self.train_model(train_df, model_name, use_grid_search=True)
                 
-                # Evaluate model
+                # Avalia modelo
                 metrics = self.evaluate_model(model, test_df, model_name)
                 
-                # Store results
+                # Armazena resultados
                 all_results[model_name] = {
                     'model': model,
                     'metrics': metrics
                 }
                 
-                # Check if this is the best model
+                # Verifica se este é o melhor modelo
                 f1_score = metrics['f1_score']
                 if f1_score > best_score:
                     best_score = f1_score
@@ -362,7 +362,7 @@ class ModelTrainer:
         if best_model is None:
             raise RuntimeError("No models were successfully trained")
         
-        # Store training metadata
+        # Armazena metadados de treinamento
         self.training_metadata = {
             'best_model_name': [name for name, result in all_results.items() 
                               if result['model'] is best_model][0],
@@ -391,11 +391,11 @@ class ModelTrainer:
         model_path = Path(model_path)
         model_path.parent.mkdir(parents=True, exist_ok=True)
         
-        # Save model
+        # Salva modelo
         joblib.dump(model, model_path)
         logger.info(f"Model saved to {model_path}")
         
-        # Save metadata
+        # Salva metadados
         if metadata_path:
             metadata_path = Path(metadata_path)
             metadata_path.parent.mkdir(parents=True, exist_ok=True)
@@ -433,23 +433,23 @@ def main(
         metadata_path: Path to save training metadata
         random_state: Random seed
     """
-    logger.info("Starting model training pipeline")
+    logger.info("Iniciando pipeline de treinamento do modelo")
     
     try:
-        # Initialize trainer
+        # Inicializa treinador
         trainer = ModelTrainer(random_state=random_state)
         
-        # Prepare data
+        # Prepara dados
         train_df, test_df = trainer.prepare_data(data_path)
         
-        # Train and select best model
+        # Treina e seleciona melhor modelo
         best_model, metrics = trainer.train_and_select_best_model(train_df, test_df)
         
-        # Save model and metadata
+        # Salva modelo e metadados
         trainer.save_model(best_model, model_path, metadata_path)
         
-        # Print final results
-        logger.info("Training completed successfully!")
+        # Imprime resultados finais
+        logger.info("Treinamento concluído com sucesso!")
         logger.info(f"Final model metrics:")
         for metric, value in metrics.items():
             if isinstance(value, (int, float)):

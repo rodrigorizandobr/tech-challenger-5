@@ -30,18 +30,18 @@ class SkillsMatchTransformer(BaseEstimator, TransformerMixin):
         Returns:
             self
         """
-        logger.info("Fitting SkillsMatchTransformer")
+        logger.info("Ajustando SkillsMatchTransformer")
         
         all_skills = set()
         
-        # Extract skills from candidate_skills column
+        # Extrai habilidades da coluna candidate_skills
         if 'candidate_skills' in X.columns:
             for skills_str in X['candidate_skills'].dropna():
                 if isinstance(skills_str, str):
                     skills = [s.strip().lower() for s in skills_str.split(',')]
                     all_skills.update(skills)
         
-        # Extract skills from required_skills column
+        # Extrai habilidades da coluna required_skills
         if 'required_skills' in X.columns:
             for skills_str in X['required_skills'].dropna():
                 if isinstance(skills_str, str):
@@ -68,24 +68,24 @@ class SkillsMatchTransformer(BaseEstimator, TransformerMixin):
         
         X_transformed = X.copy()
         
-        # Calculate skills match ratio if not already present
+        # Calcula proporção de match de habilidades se não estiver presente
         if 'skills_match_ratio' not in X_transformed.columns:
             X_transformed['skills_match_ratio'] = X_transformed.apply(
                 self._calculate_skills_match_ratio, axis=1
             )
         
-        # Calculate skills count if not already present
+        # Calcula contagem de habilidades se não estiver presente
         if 'skills_count' not in X_transformed.columns:
             X_transformed['skills_count'] = X_transformed.apply(
                 self._calculate_skills_count, axis=1
             )
         
-        # Calculate skill diversity score
+        # Calcula score de diversidade de habilidades
         X_transformed['skill_diversity'] = X_transformed.apply(
             self._calculate_skill_diversity, axis=1
         )
         
-        # Calculate rare skills bonus
+        # Calcula bônus de habilidades raras
         X_transformed['rare_skills_bonus'] = X_transformed.apply(
             self._calculate_rare_skills_bonus, axis=1
         )
@@ -132,10 +132,10 @@ class SkillsMatchTransformer(BaseEstimator, TransformerMixin):
             candidate_skills = self._parse_skills(row.get('candidate_skills', ''))
             required_skills = self._parse_skills(row.get('required_skills', ''))
             
-            # Skills that candidate has but are not required (specialization)
+            # Habilidades que o candidato tem mas não são requeridas (especialização)
             extra_skills = set(candidate_skills) - set(required_skills)
             
-            # Bonus based on number of extra skills (capped at 0.2)
+            # Bônus baseado no número de habilidades extras (limitado a 0.2)
             return min(0.2, len(extra_skills) * 0.02)
         except Exception:
             return 0.0
@@ -159,18 +159,18 @@ class SalaryFitTransformer(BaseEstimator, TransformerMixin):
         """Transform salary data into fit features."""
         X_transformed = X.copy()
         
-        # Calculate salary fit if not already present
+        # Calcula adequação salarial se não estiver presente
         if 'salary_fit' not in X_transformed.columns:
             X_transformed['salary_fit'] = X_transformed.apply(
                 self._calculate_salary_fit, axis=1
             )
         
-        # Calculate salary position within range
+        # Calcula posição salarial dentro da faixa
         X_transformed['salary_position'] = X_transformed.apply(
             self._calculate_salary_position, axis=1
         )
         
-        # Calculate salary expectation ratio
+        # Calcula proporção de expectativa salarial
         X_transformed['salary_expectation_ratio'] = X_transformed.apply(
             self._calculate_salary_ratio, axis=1
         )
@@ -187,10 +187,10 @@ class SalaryFitTransformer(BaseEstimator, TransformerMixin):
             if salary_min <= salary_exp <= salary_max:
                 return 1.0
             elif salary_exp < salary_min:
-                # Candidate expects less (good for employer)
+                # Candidato espera menos (bom para empregador)
                 return min(1.0, 0.8 + (salary_min - salary_exp) / salary_min * 0.2)
             else:
-                # Candidate expects more (penalty)
+                # Candidato espera mais (penalidade)
                 return max(0.1, 1.0 - (salary_exp - salary_max) / salary_max)
         except Exception:
             return 0.5
@@ -237,13 +237,13 @@ class LocationCompatibilityTransformer(BaseEstimator, TransformerMixin):
         """Transform location data into compatibility features."""
         X_transformed = X.copy()
         
-        # Calculate location match if not already present
+        # Calcula match de localização se não estiver presente
         if 'location_match' not in X_transformed.columns:
             X_transformed['location_match'] = X_transformed.apply(
                 self._calculate_location_match, axis=1
             )
         
-        # Calculate remote compatibility if not already present
+        # Calcula compatibilidade remota se não estiver presente
         if 'remote_compatibility' not in X_transformed.columns:
             X_transformed['remote_compatibility'] = X_transformed.apply(
                 self._calculate_remote_compatibility, axis=1
@@ -259,11 +259,11 @@ class LocationCompatibilityTransformer(BaseEstimator, TransformerMixin):
             remote_work = row.get('remote_work', False)
             remote_allowed = row.get('remote_allowed', False)
             
-            # Perfect match
+            # Match perfeito
             if candidate_location == job_location:
                 return 1.0
             
-            # Remote work scenarios
+            # Cenários de trabalho remoto
             if job_location == 'remote' or (remote_work and remote_allowed):
                 return 1.0
             
@@ -287,7 +287,7 @@ class LocationCompatibilityTransformer(BaseEstimator, TransformerMixin):
             if candidate_state and job_state and candidate_state == job_state:
                 return 0.7
             
-            # Different locations
+            # Localizações diferentes
             return 0.2
         except Exception:
             return 0.5
@@ -316,9 +316,9 @@ def create_preprocessing_pipeline() -> ColumnTransformer:
     Returns:
         Configured ColumnTransformer pipeline
     """
-    logger.info("Creating preprocessing pipeline")
+    logger.info("Criando pipeline de pré-processamento")
     
-    # Define feature columns
+    # Define colunas de features
     numeric_features = [
         'age', 'years_experience', 'previous_companies', 
         'salary_expectation', 'availability_days', 'urgency_days',
@@ -334,24 +334,24 @@ def create_preprocessing_pipeline() -> ColumnTransformer:
         'remote_work', 'remote_allowed'
     ]
     
-    # Numeric pipeline
+    # Pipeline numérico
     numeric_pipeline = Pipeline([
         ('imputer', SimpleImputer(strategy='median')),
         ('scaler', StandardScaler())
     ])
     
-    # Categorical pipeline
+    # Pipeline categórico
     categorical_pipeline = Pipeline([
         ('imputer', SimpleImputer(strategy='constant', fill_value='unknown')),
         ('onehot', OneHotEncoder(handle_unknown='ignore', sparse_output=False))
     ])
     
-    # Boolean pipeline
+    # Pipeline booleano
     boolean_pipeline = Pipeline([
         ('imputer', SimpleImputer(strategy='constant', fill_value=False))
     ])
     
-    # Combine all pipelines
+    # Combina todos os pipelines
     preprocessor = ColumnTransformer(
         transformers=[
             ('num', numeric_pipeline, numeric_features),
@@ -375,7 +375,7 @@ def create_feature_engineering_pipeline() -> Pipeline:
     Returns:
         Complete feature engineering pipeline
     """
-    logger.info("Creating feature engineering pipeline")
+    logger.info("Criando pipeline de engenharia de features")
     
     pipeline = Pipeline([
         ('skills_transformer', SkillsMatchTransformer()),
@@ -384,7 +384,7 @@ def create_feature_engineering_pipeline() -> Pipeline:
         ('preprocessor', create_preprocessing_pipeline())
     ])
     
-    logger.info("Feature engineering pipeline created")
+    logger.info("Pipeline de engenharia de features criado")
     return pipeline
 
 
@@ -401,7 +401,7 @@ def engineer_features(df: pd.DataFrame) -> pd.DataFrame:
     
     df_engineered = df.copy()
     
-    # Apply custom transformers
+    # Aplica transformadores customizados
     skills_transformer = SkillsMatchTransformer()
     df_engineered = skills_transformer.fit_transform(df_engineered)
     
@@ -411,7 +411,7 @@ def engineer_features(df: pd.DataFrame) -> pd.DataFrame:
     location_transformer = LocationCompatibilityTransformer()
     df_engineered = location_transformer.fit_transform(df_engineered)
     
-    # Add derived features
+    # Adiciona features derivadas
     df_engineered['experience_education_ratio'] = (
         df_engineered['years_experience'] / 
         df_engineered.get('education_numeric', 1).replace(0, 1)
@@ -427,7 +427,7 @@ def engineer_features(df: pd.DataFrame) -> pd.DataFrame:
         df_engineered.get('salary_range_min', 0)
     )
     
-    # Company stability indicator
+    # Indicador de estabilidade da empresa
     df_engineered['company_stability'] = np.where(
         df_engineered.get('years_experience', 0) > 0,
         df_engineered.get('years_experience', 0) / 
@@ -452,7 +452,7 @@ def get_feature_names(preprocessor: ColumnTransformer) -> List[str]:
     try:
         return preprocessor.get_feature_names_out()
     except AttributeError:
-        # Fallback for older sklearn versions
+        # Fallback para versões antigas do sklearn
         feature_names = []
         
         for name, transformer, features in preprocessor.transformers_:
@@ -500,11 +500,19 @@ def load_preprocessor(filepath: str) -> ColumnTransformer:
 
 
 if __name__ == "__main__":
-    # Test feature engineering
-    from src.data import generate_synthetic_data
+    # Test feature engineering with real data
+    import sys
+    sys.path.append('.')
+    from data import load_real_data
     
-    # Generate test data
-    df = generate_synthetic_data(100)
+    # Load real data
+    df = load_real_data()
+    
+    if df.empty:
+        print("No real data available for testing")
+        sys.exit(1)
+    
+    print(f"Loaded {len(df)} samples for feature engineering test")
     
     # Apply feature engineering
     df_engineered = engineer_features(df)
@@ -512,3 +520,13 @@ if __name__ == "__main__":
     print(f"Original shape: {df.shape}")
     print(f"Engineered shape: {df_engineered.shape}")
     print(f"New columns: {set(df_engineered.columns) - set(df.columns)}")
+    
+    # Show sample of engineered features
+    print("\nSample of engineered features:")
+    feature_cols = ['skills_match_ratio', 'skill_diversity', 'rare_skills_bonus', 
+                   'salary_fit', 'salary_position', 'location_match']
+    available_cols = [col for col in feature_cols if col in df_engineered.columns]
+    if available_cols:
+        print(df_engineered[available_cols].head())
+    
+    print("\nFeature engineering test completed successfully!")

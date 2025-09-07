@@ -1,4 +1,6 @@
-#!/Users/rodrigomatheus/Library/CloudStorage/OneDrive-Pessoal/Projetos/fiap-pos-tech/tech-challenger-5/venv/bin/python3
+#!/bin/sh
+'''exec' "/Users/vitorefigenio/Documents/fiap/fase5/Datathon - Decision/tech-challenger-5/venv/bin/python3.13" "$0" "$@"
+' '''
 # -*- coding: utf-8 -*-
 import re
 import sys

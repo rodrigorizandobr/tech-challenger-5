@@ -17,7 +17,7 @@ try:
         ColumnDriftMetric, ColumnSummaryMetric
     )
 except ImportError:
-    logger.warning("Evidently not installed. Install with: pip install evidently")
+    logger.warning("Evidently não instalado. Instale com: pip install evidently")
     ColumnMapping = None
     Report = None
     DataDriftPreset = None
@@ -48,22 +48,22 @@ class DriftMonitor:
         self.reference_data = None
         self.column_mapping = None
         
-        # Load reference data
+        # Carrega dados de referência
         self._load_reference_data()
         self._setup_column_mapping()
     
     def _load_reference_data(self) -> None:
         """Load and prepare reference data."""
         try:
-            logger.info(f"Loading reference data from {self.reference_data_path}")
+            logger.info(f"Carregando dados de referência de {self.reference_data_path}")
             
-            # Load data
+            # Carrega dados
             df = load_and_validate_data(self.reference_data_path)
             
-            # Apply feature engineering
+            # Aplica engenharia de features
             df_engineered = engineer_features(df)
             
-            # Select features for monitoring
+            # Seleciona features para monitoramento
             feature_cols = [
                 'age', 'education_numeric', 'years_experience', 'skills_count',
                 'skills_match_ratio', 'previous_companies', 'salary_expectation',
@@ -74,29 +74,29 @@ class DriftMonitor:
                 'salary_range_width', 'company_stability'
             ]
             
-            # Filter to available columns
+            # Filtra para colunas disponíveis
             available_cols = [col for col in feature_cols if col in df_engineered.columns]
             
-            # Add target column
+            # Adiciona coluna target
             if 'match_label' in df_engineered.columns:
                 available_cols.append('match_label')
             
             self.reference_data = df_engineered[available_cols].copy()
             
-            logger.info(f"Reference data loaded with shape {self.reference_data.shape}")
+            logger.info(f"Dados de referência carregados com formato {self.reference_data.shape}")
             
         except Exception as e:
-            logger.error(f"Error loading reference data: {e}")
+            logger.error(f"Erro ao carregar dados de referência: {e}")
             raise
     
     def _setup_column_mapping(self) -> None:
         """Setup column mapping for Evidently."""
         if ColumnMapping is None:
-            logger.warning("Evidently not available, skipping column mapping")
+            logger.warning("Evidently não disponível, pulando mapeamento de colunas")
             return
         
         try:
-            # Define numerical and categorical features
+            # Define features numéricas e categóricas
             numerical_features = [
                 'age', 'years_experience', 'skills_count', 'skills_match_ratio',
                 'previous_companies', 'salary_expectation', 'salary_fit',
@@ -110,7 +110,7 @@ class DriftMonitor:
                 'education_numeric', 'experience_level_numeric'
             ]
             
-            # Filter to available columns
+            # Filtra para colunas disponíveis
             if self.reference_data is not None:
                 available_cols = self.reference_data.columns.tolist()
                 numerical_features = [col for col in numerical_features if col in available_cols]
@@ -123,10 +123,10 @@ class DriftMonitor:
                 categorical_features=categorical_features
             )
             
-            logger.info("Column mapping configured successfully")
+            logger.info("Mapeamento de colunas configurado com sucesso")
             
         except Exception as e:
-            logger.error(f"Error setting up column mapping: {e}")
+            logger.error(f"Erro ao configurar mapeamento de colunas: {e}")
             self.column_mapping = None
     
     def load_current_data(self, predictions_log_path: str, window_size: int = 100) -> Optional[pd.DataFrame]:
@@ -143,28 +143,28 @@ class DriftMonitor:
             log_path = Path(predictions_log_path)
             
             if not log_path.exists():
-                logger.warning(f"Predictions log not found at {log_path}")
+                logger.warning(f"Log de predições não encontrado em {log_path}")
                 return None
             
-            # Load predictions log
+            # Carrega log de predições
             df_log = pd.read_csv(log_path)
             
             if len(df_log) == 0:
-                logger.warning("Predictions log is empty")
+                logger.warning("Log de predições está vazio")
                 return None
             
-            # Get recent predictions
+            # Obtém predições recentes
             df_recent = df_log.tail(window_size).copy()
             
-            # Convert to format similar to reference data
+            # Converte para formato similar aos dados de referência
             current_data = self._convert_log_to_features(df_recent)
             
-            logger.info(f"Loaded {len(current_data)} recent predictions for drift analysis")
+            logger.info(f"Carregadas {len(current_data)} predições recentes para análise de drift")
             
             return current_data
             
         except Exception as e:
-            logger.error(f"Error loading current data: {e}")
+            logger.error(f"Erro ao carregar dados atuais: {e}")
             return None
     
     def _convert_log_to_features(self, df_log: pd.DataFrame) -> pd.DataFrame:
@@ -177,11 +177,11 @@ class DriftMonitor:
             DataFrame in feature format
         """
         try:
-            # Extract features from log
+            # Extrai features do log
             feature_data = []
             
             for _, row in df_log.iterrows():
-                # Create feature row similar to training data
+                # Cria linha de features similar aos dados de treinamento
                 feature_row = {
                     'age': row.get('candidate_age', 30),
                     'years_experience': row.get('candidate_years_experience', 5),
@@ -190,13 +190,13 @@ class DriftMonitor:
                     'salary_expectation': row.get('candidate_salary_expectation', 70000),
                     'availability_urgency_ratio': row.get('job_urgency_days', 30) / max(row.get('candidate_availability_days', 30), 1),
                     
-                    # Use prediction results as proxy for engineered features
+                    # Usa resultados de predição como proxy para features engenheiradas
                     'skills_match_ratio': row.get('match_probability', 0.5) * 0.8,  # Approximate
                     'salary_fit': 1.0 if row.get('match_probability', 0) > 0.7 else 0.5,
                     'location_match': 1.0 if row.get('match_probability', 0) > 0.6 else 0.3,
                     'remote_compatibility': 0.8,  # Default value
                     
-                    # Education and experience mapping
+                    # Mapeamento de educação e experiência
                     'education_numeric': {
                         'high_school': 1, 'bachelor': 2, 'master': 3, 'phd': 4
                     }.get(row.get('candidate_education_level', 'bachelor'), 2),
@@ -205,7 +205,7 @@ class DriftMonitor:
                         'junior': 1, 'mid': 2, 'senior': 3, 'lead': 4
                     }.get(row.get('job_required_experience', 'mid'), 2),
                     
-                    # Derived features (simplified)
+                    # Features derivadas (simplificadas)
                     'skill_diversity': min(1.0, row.get('candidate_skills', '').count(',') * 0.1) if pd.notna(row.get('candidate_skills')) else 0,
                     'rare_skills_bonus': 0.1,  # Default value
                     'salary_position': 0.5,  # Default value
@@ -214,7 +214,7 @@ class DriftMonitor:
                     'salary_range_width': row.get('job_salary_range_max', 100000) - row.get('job_salary_range_min', 70000),
                     'company_stability': row.get('candidate_years_experience', 5) / max(row.get('candidate_previous_companies', 1), 1),
                     
-                    # Target (if available)
+                    # Target (se disponível)
                     'match_label': row.get('match_label', 'good_match' if row.get('match_probability', 0) > 0.65 else 'poor_match')
                 }
                 
@@ -222,19 +222,19 @@ class DriftMonitor:
             
             df_features = pd.DataFrame(feature_data)
             
-            # Ensure columns match reference data
+            # Garante que colunas coincidam com dados de referência
             if self.reference_data is not None:
                 for col in self.reference_data.columns:
                     if col not in df_features.columns:
                         df_features[col] = 0.5  # Default value
                 
-                # Reorder columns to match reference
+                # Reordena colunas para coincidir com referência
                 df_features = df_features[self.reference_data.columns]
             
             return df_features
             
         except Exception as e:
-            logger.error(f"Error converting log to features: {e}")
+            logger.error(f"Erro ao converter log para features: {e}")
             return pd.DataFrame()
     
     def generate_drift_report(
@@ -252,13 +252,13 @@ class DriftMonitor:
             Path to generated report
         """
         if Report is None:
-            logger.error("Evidently not available. Cannot generate drift report.")
+            logger.error("Evidently não disponível. Não é possível gerar relatório de drift.")
             return self._generate_fallback_report(current_data, report_name)
         
         try:
-            logger.info("Generating drift report with Evidently")
+            logger.info("Gerando relatório de drift com Evidently")
             
-            # Create report
+            # Cria relatório
             report = Report(metrics=[
                 DataDriftPreset(),
                 DataQualityPreset(),
@@ -266,32 +266,32 @@ class DriftMonitor:
                 DatasetMissingValuesMetric()
             ])
             
-            # Run report
+            # Executa relatório
             report.run(
                 reference_data=self.reference_data,
                 current_data=current_data,
                 column_mapping=self.column_mapping
             )
             
-            # Save report
+            # Salva relatório
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             report_path = self.reports_dir / f"{report_name}_{timestamp}.html"
             
             report.save_html(str(report_path))
             
-            # Also save as the main drift report
+            # Também salva como relatório principal de drift
             main_report_path = self.reports_dir / "drift.html"
             report.save_html(str(main_report_path))
             
-            logger.info(f"Drift report saved to {report_path}")
+            logger.info(f"Relatório de drift salvo em {report_path}")
             
-            # Extract and log key metrics
+            # Extrai e registra métricas principais
             self._log_drift_metrics(report)
             
             return str(report_path)
             
         except Exception as e:
-            logger.error(f"Error generating drift report: {e}")
+            logger.error(f"Erro ao gerar relatório de drift: {e}")
             return self._generate_fallback_report(current_data, report_name)
     
     def _generate_fallback_report(self, current_data: pd.DataFrame, report_name: str) -> str:
@@ -305,13 +305,13 @@ class DriftMonitor:
             Path to generated report
         """
         try:
-            logger.info("Generating fallback drift report")
+            logger.info("Gerando relatório de drift alternativo")
             
-            # Calculate basic statistics
+            # Calcula estatísticas básicas
             ref_stats = self.reference_data.describe() if self.reference_data is not None else None
             curr_stats = current_data.describe()
             
-            # Simple drift detection
+            # Detecção simples de drift
             drift_detected = False
             drift_columns = []
             
@@ -321,12 +321,12 @@ class DriftMonitor:
                         ref_mean = ref_stats.loc['mean', col]
                         curr_mean = curr_stats.loc['mean', col]
                         
-                        # Simple threshold-based drift detection
+                        # Detecção simples de drift baseada em limiar
                         if abs(ref_mean - curr_mean) / (abs(ref_mean) + 1e-8) > 0.1:
                             drift_detected = True
                             drift_columns.append(col)
             
-            # Generate HTML report
+            # Gera relatório HTML
             html_content = f"""
             <!DOCTYPE html>
             <html>
@@ -381,24 +381,24 @@ class DriftMonitor:
             </html>
             """
             
-            # Save report
+            # Salva relatório
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             report_path = self.reports_dir / f"{report_name}_{timestamp}.html"
             
             with open(report_path, 'w', encoding='utf-8') as f:
                 f.write(html_content)
             
-            # Also save as main drift report
+            # Também salva como relatório principal de drift
             main_report_path = self.reports_dir / "drift.html"
             with open(main_report_path, 'w', encoding='utf-8') as f:
                 f.write(html_content)
             
-            logger.info(f"Fallback drift report saved to {report_path}")
+            logger.info(f"Relatório de drift alternativo salvo em {report_path}")
             
             return str(report_path)
             
         except Exception as e:
-            logger.error(f"Error generating fallback report: {e}")
+            logger.error(f"Erro ao gerar relatório alternativo: {e}")
             raise
     
     def _log_drift_metrics(self, report) -> None:
@@ -408,12 +408,12 @@ class DriftMonitor:
             report: Evidently report object
         """
         try:
-            # This would extract metrics from the Evidently report
-            # Implementation depends on Evidently version
-            logger.info("Drift metrics logged successfully")
+            # Isso extrairia métricas do relatório Evidently
+            # Implementação depende da versão do Evidently
+            logger.info("Métricas de drift registradas com sucesso")
             
         except Exception as e:
-            logger.warning(f"Could not extract drift metrics: {e}")
+            logger.warning(f"Não foi possível extrair métricas de drift: {e}")
     
     def run_monitoring(
         self, 
@@ -429,25 +429,25 @@ class DriftMonitor:
         Returns:
             Path to generated report
         """
-        logger.info("Starting drift monitoring pipeline")
+        logger.info("Iniciando pipeline de monitoramento de drift")
         
         try:
-            # Load current data
+            # Carrega dados atuais
             current_data = self.load_current_data(predictions_log_path, window_size)
             
             if current_data is None or len(current_data) == 0:
-                logger.warning("No current data available for drift analysis")
+                logger.warning("Nenhum dado atual disponível para análise de drift")
                 return self._generate_empty_report()
             
-            # Generate drift report
+            # Gera relatório de drift
             report_path = self.generate_drift_report(current_data)
             
-            logger.info(f"Drift monitoring completed. Report: {report_path}")
+            logger.info(f"Monitoramento de drift concluído. Relatório: {report_path}")
             
             return report_path
             
         except Exception as e:
-            logger.error(f"Error in monitoring pipeline: {e}")
+            logger.error(f"Erro no pipeline de monitoramento: {e}")
             raise
     
     def _generate_empty_report(self) -> str:
@@ -501,18 +501,18 @@ def main(
         window_size: Window size for analysis
     """
     try:
-        logger.info("Starting drift monitoring")
+        logger.info("Iniciando monitoramento de drift")
         
-        # Initialize monitor
+        # Inicializa monitor
         monitor = DriftMonitor(reference_data_path, reports_dir)
         
-        # Run monitoring
+        # Executa monitoramento
         report_path = monitor.run_monitoring(predictions_log_path, window_size)
         
-        logger.info(f"Drift monitoring completed successfully. Report: {report_path}")
+        logger.info(f"Monitoramento de drift concluído com sucesso. Relatório: {report_path}")
         
     except Exception as e:
-        logger.error(f"Drift monitoring failed: {e}")
+        logger.error(f"Monitoramento de drift falhou: {e}")
         raise
 
 

@@ -51,7 +51,7 @@ logs/
 # Data files (large JSON files)
 data/applicants.json
 data/prospects.json
-data/vagas.json
+data/jobs.json
 
 # Model files (can be large)
 models/*.joblib

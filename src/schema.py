@@ -17,9 +17,33 @@ class ExperienceLevel(str, Enum):
 class EducationLevel(str, Enum):
     """Education level enumeration."""
     HIGH_SCHOOL = "high_school"
+    ENSINO_MEDIO = "Ensino Médio"
     BACHELOR = "bachelor"
+    ENSINO_SUPERIOR = "Ensino Superior"
     MASTER = "master"
+    POS_GRADUACAO = "Pós-graduação"
+    MESTRADO = "Mestrado"
     PHD = "phd"
+    DOUTORADO = "Doutorado"
+
+
+class LanguageLevel(str, Enum):
+    """Language proficiency level enumeration."""
+    NENHUM = "Nenhum"
+    BASICO = "Básico"
+    INTERMEDIARIO = "Intermediário"
+    AVANCADO = "Avançado"
+    FLUENTE = "Fluente"
+
+
+class AreaAtuacao(str, Enum):
+    """Area of expertise enumeration."""
+    TECNOLOGIA = "Tecnologia"
+    VENDAS = "Vendas"
+    MARKETING = "Marketing"
+    FINANCEIRO = "Financeiro"
+    RECURSOS_HUMANOS = "Recursos Humanos"
+    GERAL = "Geral"
 
 
 class CandidateInput(BaseModel):
@@ -47,7 +71,7 @@ class CandidateInput(BaseModel):
         """Validate skills list."""
         if not v:
             raise ValueError("Skills list cannot be empty")
-        # Remove duplicates and convert to lowercase
+        # Remove duplicidades e converte para minúsculas
         return list(set(skill.strip().lower() for skill in v if skill.strip()))
 
     @validator('location')
@@ -202,3 +226,117 @@ class PredictionLog(BaseModel):
     )
     timestamp: datetime = Field(default_factory=datetime.now)
     model_version: str = Field(..., description="Model version used")
+
+
+# Schemas for original data structures
+
+class InfosBasicas(BaseModel):
+    """Schema for basic candidate information."""
+    nome: Optional[str] = Field(None, description="Candidate name")
+    email: Optional[str] = Field(None, description="Email address")
+    telefone: Optional[str] = Field(None, description="Phone number")
+
+
+class InformacoesPessoais(BaseModel):
+    """Schema for personal information."""
+    data_nascimento: Optional[str] = Field(None, description="Birth date")
+    endereco: Optional[str] = Field(None, description="Address")
+    estado_civil: Optional[str] = Field(None, description="Marital status")
+
+
+class InformacoesProfissionais(BaseModel):
+    """Schema for professional information."""
+    area_atuacao: Optional[str] = Field(None, description="Area of expertise")
+    conhecimentos_tecnicos: Optional[str] = Field(None, description="Technical knowledge")
+    remuneracao: Optional[str] = Field(None, description="Salary expectation")
+
+
+class FormacaoIdiomas(BaseModel):
+    """Schema for education and languages."""
+    nivel_academico: Optional[str] = Field(None, description="Academic level")
+    nivel_ingles: Optional[str] = Field(None, description="English level")
+    nivel_espanhol: Optional[str] = Field(None, description="Spanish level")
+
+
+class CandidateRawData(BaseModel):
+    """Schema for raw candidate data from JSON."""
+    infos_basicas: Optional[InfosBasicas] = Field(None, description="Basic information")
+    informacoes_pessoais: Optional[InformacoesPessoais] = Field(None, description="Personal information")
+    informacoes_profissionais: Optional[InformacoesProfissionais] = Field(None, description="Professional information")
+    formacao_e_idiomas: Optional[FormacaoIdiomas] = Field(None, description="Education and languages")
+    cargo_atual: Optional[Dict[str, Any]] = Field(None, description="Current position")
+    cv_pt: Optional[str] = Field(None, description="CV in Portuguese")
+
+
+class JobInfosBasicas(BaseModel):
+    """Schema for basic job information."""
+    titulo_vaga: Optional[str] = Field(None, description="Job title")
+    vaga_sap: Optional[str] = Field(None, description="SAP position flag")
+
+
+class PerfilVaga(BaseModel):
+    """Schema for job profile requirements."""
+    nivel_academico: Optional[str] = Field(None, description="Required academic level")
+    nivel_ingles: Optional[str] = Field(None, description="Required English level")
+    nivel_espanhol: Optional[str] = Field(None, description="Required Spanish level")
+    areas_atuacao: Optional[str] = Field(None, description="Areas of expertise")
+    principais_atividades: Optional[str] = Field(None, description="Main activities")
+    competencia_tecnicas_e_comportamentais: Optional[str] = Field(None, description="Technical and behavioral competencies")
+    cidade: Optional[str] = Field(None, description="City")
+
+
+class JobRawData(BaseModel):
+    """Schema for raw job data from JSON."""
+    informacoes_basicas: Optional[JobInfosBasicas] = Field(None, description="Basic job information")
+    perfil_vaga: Optional[PerfilVaga] = Field(None, description="Job profile")
+    beneficios: Optional[Dict[str, Any]] = Field(None, description="Benefits")
+
+
+class ProspectCandidate(BaseModel):
+    """Schema for prospect candidate information."""
+    nome: Optional[str] = Field(None, description="Candidate name")
+    codigo: Optional[str] = Field(None, description="Candidate code")
+    situacao: Optional[str] = Field(None, description="Current status")
+    data_inicio: Optional[str] = Field(None, description="Start date")
+    data_fim: Optional[str] = Field(None, description="End date")
+    comentarios: Optional[str] = Field(None, description="Comments")
+
+
+class ProspectRawData(BaseModel):
+    """Schema for raw prospect data from JSON."""
+    titulo: Optional[str] = Field(None, description="Position title")
+    modalidade: Optional[str] = Field(None, description="Work modality")
+    prospects: Optional[List[ProspectCandidate]] = Field(None, description="List of prospect candidates")
+
+
+class ProcessedCandidate(BaseModel):
+    """Schema for processed candidate data."""
+    name: str = Field(..., description="Candidate name")
+    email: Optional[str] = Field(None, description="Email address")
+    phone: Optional[str] = Field(None, description="Phone number")
+    age: int = Field(..., description="Age")
+    education_level: str = Field(..., description="Education level")
+    years_experience: int = Field(..., description="Years of experience")
+    english_level: str = Field(..., description="English proficiency")
+    spanish_level: str = Field(..., description="Spanish proficiency")
+    technical_skills: str = Field(..., description="Technical skills")
+    area_of_expertise: str = Field(..., description="Area of expertise")
+    salary_expectation: float = Field(..., description="Salary expectation")
+    location: str = Field(..., description="Location")
+    remote_work_preference: str = Field(..., description="Remote work preference")
+
+
+class ProcessedJob(BaseModel):
+    """Schema for processed job data."""
+    job_title: str = Field(..., description="Job title")
+    required_education: str = Field(..., description="Required education")
+    required_experience: int = Field(..., description="Required years of experience")
+    required_english: str = Field(..., description="Required English level")
+    required_spanish: str = Field(..., description="Required Spanish level")
+    required_skills: str = Field(..., description="Required skills")
+    job_area: str = Field(..., description="Job area")
+    salary_range_min: float = Field(..., description="Minimum salary")
+    salary_range_max: float = Field(..., description="Maximum salary")
+    job_location: str = Field(..., description="Job location")
+    remote_work_allowed: str = Field(..., description="Remote work policy")
+    is_sap_position: bool = Field(..., description="Is SAP position")

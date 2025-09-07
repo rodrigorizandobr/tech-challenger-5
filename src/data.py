@@ -18,27 +18,53 @@ def load_real_data() -> pd.DataFrame:
     Returns:
         DataFrame with processed recruitment data
     """
-    logger.info("Loading real recruitment data...")
+    logger.info("Carregando dados reais de recrutamento...")
     
-    # Load JSON files
-    data_dir = Path("data")
+    # Obtém o diretório raiz do projeto
+    current_dir = Path(__file__).parent
+    project_root = current_dir.parent
+    data_dir = project_root / "data"
+    
+    logger.info(f"Looking for data files in: {data_dir}")
     
     try:
-        with open(data_dir / "applicants.json", 'r', encoding='utf-8') as f:
+        # Verifica se os arquivos existem
+        applicants_file = data_dir / "applicants.json"
+        jobs_file = data_dir / "jobs.json"
+        prospects_file = data_dir / "prospects.json"
+        
+        if not applicants_file.exists():
+            logger.warning(f"applicants.json not found at {applicants_file}")
+            return generate_synthetic_data()
+            
+        if not jobs_file.exists():
+            logger.warning(f"jobs.json not found at {jobs_file}")
+            return generate_synthetic_data()
+            
+        if not prospects_file.exists():
+            logger.warning(f"prospects.json not found at {prospects_file}")
+            return generate_synthetic_data()
+        
+        logger.info("Carregando applicants.json...")
+        with open(applicants_file, 'r', encoding='utf-8') as f:
             applicants = json.load(f)
         
-        with open(data_dir / "vagas.json", 'r', encoding='utf-8') as f:
+        logger.info("Carregando jobs.json...")
+        with open(jobs_file, 'r', encoding='utf-8') as f:
             jobs = json.load(f)
         
-        with open(data_dir / "prospects.json", 'r', encoding='utf-8') as f:
+        logger.info("Carregando prospects.json...")
+        with open(prospects_file, 'r', encoding='utf-8') as f:
             prospects = json.load(f)
+        
+        logger.info(f"Carregados com sucesso {len(applicants)} candidatos, {len(jobs)} vagas, {len(prospects)} prospects")
     except FileNotFoundError as e:
-        logger.warning(f"Real data files not found: {e}. Generating synthetic data instead.")
+        logger.warning(f"Arquivos de dados reais não encontrados: {e}. Gerando dados sintéticos.")
         return generate_synthetic_data()
     
     data = []
     
-    # Process each job and its prospects
+    # Processa cada vaga e seus candidatos
     for job_id, job_data in jobs.items():
         if job_id not in prospects:
             continue
@@ -55,19 +81,19 @@ def load_real_data() -> pd.DataFrame:
                 
             candidate_data = applicants[candidate_id]
             
-            # Extract candidate features
+            # Extrai features do candidato
             candidate_features = extract_candidate_features(candidate_data)
             
-            # Extract job features
+            # Extrai features da vaga
             job_features = extract_job_features(job_data)
             
-            # Determine match quality based on prospect status
+            # Determina qualidade do match baseado no status do candidato
             match_label = determine_match_quality(prospect['situacao_candidado'])
             
-            # Calculate match score
+            # Calcula score do match
             match_score = calculate_real_match_score(candidate_features, job_features)
             
-            # Convert to the format expected by the model
+            # Converte para o formato esperado pelo modelo
             sample = convert_to_model_format(candidate_features, job_features, match_score, match_label)
             data.append(sample)
     
@@ -92,7 +118,7 @@ def generate_synthetic_data(n_samples: int = 1000, seed: int = 42) -> pd.DataFra
     np.random.seed(seed)
     logger.info(f"Generating {n_samples} synthetic samples with seed {seed}")
     
-    # Define skill categories
+    # Define categorias de habilidades
     tech_skills = [
         'python', 'java', 'javascript', 'sql', 'react', 'node.js', 
         'docker', 'aws', 'git', 'machine learning', 'data science',
@@ -112,7 +138,7 @@ def generate_synthetic_data(n_samples: int = 1000, seed: int = 42) -> pd.DataFra
     data = []
     
     for i in range(n_samples):
-        # Candidate features
+        # Features do candidato
         age = np.random.randint(22, 65)
         education = np.random.choice(
             ['high_school', 'bachelor', 'master', 'phd'], 
@@ -120,7 +146,7 @@ def generate_synthetic_data(n_samples: int = 1000, seed: int = 42) -> pd.DataFra
         )
         years_exp = max(0, age - 22 - np.random.randint(0, 8))
         
-        # Skills (more skills for senior candidates)
+        # Habilidades (mais habilidades para candidatos sênior)
         n_skills = min(15, max(2, int(np.random.normal(5 + years_exp/5, 2))))
         all_skills = tech_skills + soft_skills
         candidate_skills = np.random.choice(
@@ -129,7 +155,7 @@ def generate_synthetic_data(n_samples: int = 1000, seed: int = 42) -> pd.DataFra
         
         prev_companies = min(years_exp // 2, np.random.poisson(2))
         
-        # Salary based on experience and education
+        # Salário baseado em experiência e educação
         base_salary = 40000
         exp_bonus = years_exp * 4000
         edu_bonus = {'high_school': 0, 'bachelor': 10000, 'master': 20000, 'phd': 30000}[education]
@@ -140,13 +166,13 @@ def generate_synthetic_data(n_samples: int = 1000, seed: int = 42) -> pd.DataFra
         remote_work = np.random.choice([True, False], p=[0.7, 0.3])
         availability = np.random.randint(1, 120)
         
-        # Job requirements
+        # Requisitos da vaga
         req_exp_level = np.random.choice(
             ['junior', 'mid', 'senior', 'lead'], 
             p=[0.3, 0.4, 0.25, 0.05]
         )
         
-        # Required skills based on experience level
+        # Habilidades requeridas baseadas no nível de experiência
         n_req_skills = {
             'junior': np.random.randint(3, 6),
             'mid': np.random.randint(4, 8),
@@ -158,7 +184,7 @@ def generate_synthetic_data(n_samples: int = 1000, seed: int = 42) -> pd.DataFra
             tech_skills, min(n_req_skills, len(tech_skills)), replace=False
         ).tolist()
         
-        # Salary range based on experience level
+        # Faixa salarial baseada no nível de experiência
         salary_base = {
             'junior': 45000,
             'mid': 70000,
@@ -175,20 +201,20 @@ def generate_synthetic_data(n_samples: int = 1000, seed: int = 42) -> pd.DataFra
         )
         urgency = np.random.randint(7, 180)
         
-        # Calculate match based on rules
+        # Calcula match baseado em regras
         match_score = calculate_match_score(
             years_exp, req_exp_level, candidate_skills, req_skills,
             salary_exp, salary_min, salary_max, location, job_location,
             remote_work, remote_allowed, availability, urgency, education
         )
         
-        # Add some noise
+        # Adiciona algum ruído
         match_score += np.random.normal(0, 0.08)
         match_score = np.clip(match_score, 0, 1)
         
         match_label = 'good_match' if match_score > 0.65 else 'poor_match'
         
-        # Calculate derived features
+        # Calcula features derivadas
         skills_overlap = len(set(candidate_skills) & set(req_skills))
         skills_match_ratio = skills_overlap / len(req_skills) if req_skills else 0
         
@@ -231,7 +257,7 @@ def generate_synthetic_data(n_samples: int = 1000, seed: int = 42) -> pd.DataFra
             'education_numeric': education_numeric,
             'match_score': match_score,
             'match_label': match_label,
-            # Store original data for reference
+            # Armazena dados originais para referência
             'candidate_skills': ','.join(candidate_skills),
             'required_skills': ','.join(req_skills),
             'candidate_location': location,
@@ -252,6 +278,178 @@ def generate_synthetic_data(n_samples: int = 1000, seed: int = 42) -> pd.DataFra
     return df
 
 
+def extract_experience_from_cv(cv_text: str) -> int:
+    """Extract years of experience from CV text."""
+    if not cv_text:
+        return 1
+    
+    # Procura por padrões como "5 anos", "3 years", etc.
+    patterns = [
+        r'(\d+)\s*anos?\s*de\s*experiência',
+        r'(\d+)\s*years?\s*of\s*experience',
+        r'experiência\s*de\s*(\d+)\s*anos?',
+        r'(\d+)\s*anos?\s*trabalhando'
+    ]
+    
+    for pattern in patterns:
+        matches = re.findall(pattern, cv_text.lower())
+        if matches:
+            return max(int(match) for match in matches)
+    
+    # Fallback: conta posições de trabalho mencionadas
+    job_indicators = ['empresa', 'trabalhou', 'atuou', 'desenvolveu', 'responsável']
+    job_count = sum(1 for indicator in job_indicators if indicator in cv_text.lower())
+    return max(1, job_count * 2)  # Estimate 2 years per job
+
+
+def extract_skills_from_text(text: str) -> str:
+    """Extract technical skills from text."""
+    if not text:
+        return ''
+    
+    # Habilidades técnicas comuns para procurar
+    tech_skills = [
+        'python', 'java', 'javascript', 'sql', 'html', 'css', 'react', 'angular',
+        'node.js', 'php', 'c++', 'c#', 'ruby', 'go', 'kotlin', 'swift',
+        'machine learning', 'data science', 'pandas', 'numpy', 'scikit-learn',
+        'tensorflow', 'pytorch', 'docker', 'kubernetes', 'aws', 'azure', 'gcp',
+        'git', 'jenkins', 'linux', 'windows', 'mysql', 'postgresql', 'mongodb',
+        'redis', 'elasticsearch', 'spark', 'hadoop', 'tableau', 'power bi',
+        'sap', 'salesforce', 'oracle', 'microsoft office', 'excel', 'powerpoint'
+    ]
+    
+    text_lower = text.lower()
+    found_skills = []
+    
+    for skill in tech_skills:
+        if skill in text_lower:
+            found_skills.append(skill)
+    
+    return ', '.join(found_skills) if found_skills else 'Geral'
+
+
+def normalize_education_level(education: str) -> str:
+    """Normalize education level to standard format."""
+    if not education:
+        return 'Ensino Superior'
+    
+    education_lower = education.lower()
+    
+    if any(term in education_lower for term in ['doutorado', 'phd', 'doutor']):
+        return 'Doutorado'
+    elif any(term in education_lower for term in ['mestrado', 'master', 'mestre']):
+        return 'Mestrado'
+    elif any(term in education_lower for term in ['pós', 'especialização', 'mba']):
+        return 'Pós-graduação'
+    elif any(term in education_lower for term in ['superior', 'graduação', 'bacharel', 'licenciatura']):
+        return 'Ensino Superior'
+    elif any(term in education_lower for term in ['médio', 'segundo grau']):
+        return 'Ensino Médio'
+    else:
+        return 'Ensino Superior'
+
+
+def normalize_language_level(level: str) -> str:
+    """Normalize language level to standard format."""
+    if not level:
+        return 'Básico'
+    
+    level_lower = level.lower()
+    
+    if any(term in level_lower for term in ['fluente', 'nativo', 'native']):
+        return 'Fluente'
+    elif any(term in level_lower for term in ['avançado', 'advanced']):
+        return 'Avançado'
+    elif any(term in level_lower for term in ['intermediário', 'intermediate']):
+        return 'Intermediário'
+    elif any(term in level_lower for term in ['básico', 'basic', 'iniciante']):
+        return 'Básico'
+    else:
+        return 'Básico'
+
+
+def normalize_area(area: str) -> str:
+    """Normalize area of expertise to standard format."""
+    if not area:
+        return 'Tecnologia'
+    
+    area_lower = area.lower()
+    
+    if any(term in area_lower for term in ['tecnologia', 'ti', 'desenvolvimento', 'programação']):
+        return 'Tecnologia'
+    elif any(term in area_lower for term in ['vendas', 'comercial']):
+        return 'Vendas'
+    elif any(term in area_lower for term in ['marketing', 'publicidade']):
+        return 'Marketing'
+    elif any(term in area_lower for term in ['financeiro', 'contábil', 'finanças']):
+        return 'Financeiro'
+    elif any(term in area_lower for term in ['recursos humanos', 'rh']):
+        return 'Recursos Humanos'
+    else:
+        return 'Geral'
+
+
+def extract_salary(salary_text: str) -> float:
+    """Extract salary expectation from text."""
+    if not salary_text:
+        return 8000.0
+    
+    # Procura por valores numéricos
+    numbers = re.findall(r'\d+(?:\.\d+)?', salary_text.replace(',', '.'))
+    if numbers:
+        salary = float(numbers[0])
+        # Se valor é muito pequeno, assume que está em milhares
+        if salary < 100:
+            salary *= 1000
+        return min(salary, 50000)  # Cap at reasonable maximum
+    
+    return 8000.0  # Default
+
+
+def extract_location(address: str) -> str:
+    """Extract location from address."""
+    if not address:
+        return 'São Paulo'
+    
+    # Procura por nomes de cidades comuns
+    cities = ['são paulo', 'rio de janeiro', 'belo horizonte', 'brasília', 'salvador', 'fortaleza']
+    address_lower = address.lower()
+    
+    for city in cities:
+        if city in address_lower:
+            return city.title()
+    
+    return 'São Paulo'  # Default
+
+
+def extract_required_experience(job_description: str) -> int:
+    """Extract required years of experience from job description."""
+    if not job_description:
+        return 3
+    
+    # Procura por requisitos de experiência
+    patterns = [
+        r'(\d+)\s*anos?\s*de\s*experiência',
+        r'experiência\s*de\s*(\d+)\s*anos?',
+        r'mínimo\s*de\s*(\d+)\s*anos?'
+    ]
+    
+    for pattern in patterns:
+        matches = re.findall(pattern, job_description.lower())
+        if matches:
+            return int(matches[0])
+    
+    # Procura por níveis de senioridade
+    if any(term in job_description.lower() for term in ['sênior', 'senior']):
+        return 5
+    elif any(term in job_description.lower() for term in ['pleno', 'mid']):
+        return 3
+    elif any(term in job_description.lower() for term in ['júnior', 'junior']):
+        return 1
+    
+    return 3  # Default
+
+
 def extract_candidate_features(candidate_data: Dict) -> Dict:
     """Extract relevant features from candidate data.
     
@@ -267,7 +465,7 @@ def extract_candidate_features(candidate_data: Dict) -> Dict:
     formacao_idiomas = candidate_data.get('formacao_e_idiomas', {})
     cv = candidate_data.get('cv_pt', '')
     
-    # Calculate age from birth date if available
+    # Calcula idade a partir da data de nascimento se disponível
     age = 30  # default
     birth_date = infos_pessoais.get('data_nascimento', '')
     if birth_date and birth_date != '0000-00-00':
@@ -278,10 +476,10 @@ def extract_candidate_features(candidate_data: Dict) -> Dict:
         except:
             pass
     
-    # Extract years of experience from CV
+    # Extrai anos de experiência do CV
     years_experience = extract_experience_from_cv(cv)
     
-    # Extract technical skills from CV and professional info
+    # Extrai habilidades técnicas do CV e informações profissionais
     technical_skills = extract_skills_from_text(cv + ' ' + infos_profissionais.get('conhecimentos_tecnicos', ''))
     
     return {
@@ -313,7 +511,7 @@ def extract_job_features(job_data: Dict) -> Dict:
     infos_basicas = job_data.get('informacoes_basicas', {})
     perfil_vaga = job_data.get('perfil_vaga', {})
     
-    # Extract required skills from job description
+    # Extrai habilidades requeridas da descrição da vaga
     job_description = perfil_vaga.get('principais_atividades', '') + ' ' + perfil_vaga.get('competencia_tecnicas_e_comportamentais', '')
     required_skills = extract_skills_from_text(job_description)
     
@@ -368,7 +566,7 @@ def calculate_real_match_score(candidate: Dict, job: Dict) -> float:
     score = 0.0
     total_weight = 0.0
     
-    # Education level match (weight: 0.2)
+    # Match de nível educacional (peso: 0.2)
     education_levels = ['Ensino Médio', 'Ensino Superior', 'Pós-graduação', 'Mestrado', 'Doutorado']
     candidate_edu_idx = education_levels.index(candidate['education_level']) if candidate['education_level'] in education_levels else 0
     required_edu_idx = education_levels.index(job['required_education']) if job['required_education'] in education_levels else 0
@@ -379,12 +577,12 @@ def calculate_real_match_score(candidate: Dict, job: Dict) -> float:
         score += 0.2 * (candidate_edu_idx / required_edu_idx) if required_edu_idx > 0 else 0
     total_weight += 0.2
     
-    # Experience match (weight: 0.25)
+    # Match de experiência (peso: 0.25)
     exp_ratio = min(candidate['years_experience'] / max(job['required_experience'], 1), 1.0)
     score += 0.25 * exp_ratio
     total_weight += 0.25
     
-    # Skills match (weight: 0.3)
+    # Match de habilidades (peso: 0.3)
     candidate_skills = set(skill.strip().lower() for skill in candidate['technical_skills'].split(',') if skill.strip())
     required_skills = set(skill.strip().lower() for skill in job['required_skills'].split(',') if skill.strip())
     
@@ -393,15 +591,15 @@ def calculate_real_match_score(candidate: Dict, job: Dict) -> float:
         score += 0.3 * skills_match
     total_weight += 0.3
     
-    # Area match (weight: 0.15)
+    # Match de área (peso: 0.15)
     if candidate['area_of_expertise'].lower() == job['job_area'].lower():
         score += 0.15
     total_weight += 0.15
     
-    # Language requirements (weight: 0.1)
+    # Requisitos de idioma (peso: 0.1)
     language_levels = ['Nenhum', 'Básico', 'Intermediário', 'Avançado', 'Fluente']
     
-    # English
+    # Inglês
     candidate_eng_idx = language_levels.index(candidate['english_level']) if candidate['english_level'] in language_levels else 0
     required_eng_idx = language_levels.index(job['required_english']) if job['required_english'] in language_levels else 0
     
@@ -409,7 +607,7 @@ def calculate_real_match_score(candidate: Dict, job: Dict) -> float:
         score += 0.05
     total_weight += 0.05
     
-    # Spanish
+    # Espanhol
     candidate_spa_idx = language_levels.index(candidate['spanish_level']) if candidate['spanish_level'] in language_levels else 0
     required_spa_idx = language_levels.index(job['required_spanish']) if job['required_spanish'] in language_levels else 0
     
@@ -450,7 +648,7 @@ def calculate_match_score(
     """
     score = 0.0
     
-    # Experience match (30% weight)
+    # Match de experiência (peso 30%)
     exp_mapping = {'junior': 2, 'mid': 5, 'senior': 8, 'lead': 12}
     required_exp = exp_mapping[req_exp_level]
     
@@ -463,11 +661,11 @@ def calculate_match_score(
     
     score += exp_score * 0.3
     
-    # Skills match (35% weight)
+    # Match de habilidades (peso 35%)
     if req_skills:
         skills_overlap = len(set(candidate_skills) & set(req_skills))
         skills_ratio = skills_overlap / len(req_skills)
-        # Bonus for having more skills than required
+        # Bônus por ter mais habilidades que o requerido
         bonus = min(0.2, (len(candidate_skills) - len(req_skills)) * 0.02)
         skills_score = min(1.0, skills_ratio + bonus)
     else:
@@ -475,7 +673,7 @@ def calculate_match_score(
     
     score += skills_score * 0.35
     
-    # Salary fit (15% weight)
+    # Adequação salarial (peso 15%)
     if salary_min <= salary_exp <= salary_max:
         salary_score = 1.0
     elif salary_exp < salary_min:
@@ -485,7 +683,7 @@ def calculate_match_score(
     
     score += salary_score * 0.15
     
-    # Location and remote compatibility (10% weight)
+    # Localização e compatibilidade remota (peso 10%)
     if location == job_location or job_location == 'Remote':
         location_score = 1.0
     elif remote_work and remote_allowed:
@@ -497,7 +695,7 @@ def calculate_match_score(
     
     score += location_score * 0.1
     
-    # Availability vs urgency (5% weight)
+    # Disponibilidade vs urgência (peso 5%)
     if availability <= urgency:
         availability_score = 1.0
     else:
@@ -505,7 +703,7 @@ def calculate_match_score(
     
     score += availability_score * 0.05
     
-    # Education bonus (5% weight)
+    # Bônus educacional (peso 5%)
     edu_mapping = {'high_school': 0.5, 'bachelor': 0.7, 'master': 0.9, 'phd': 1.0}
     education_score = edu_mapping.get(education, 0.5)
     
@@ -572,7 +770,7 @@ def extract_experience_from_cv(cv_text: str) -> int:
     if not cv_text:
         return 0
     
-    # Look for patterns like "5 anos", "3 years", etc.
+    # Procura por padrões como "5 anos", "3 years", etc.
     patterns = [
         r'(\d+)\s*anos?\s*de\s*experiência',
         r'(\d+)\s*years?\s*of\s*experience',
@@ -585,7 +783,7 @@ def extract_experience_from_cv(cv_text: str) -> int:
         if matches:
             return int(matches[0])
     
-    # Fallback: count job positions mentioned
+    # Fallback: conta posições de trabalho mencionadas
     job_keywords = ['empresa', 'trabalho', 'cargo', 'função', 'posição']
     job_count = sum(cv_text.lower().count(keyword) for keyword in job_keywords)
     return min(job_count * 2, 15)  # Estimate 2 years per job, max 15
@@ -619,11 +817,11 @@ def extract_salary(salary_text: str) -> float:
     if not salary_text:
         return 8000.0  # default
     
-    # Look for numbers in the text
+    # Procura por números no texto
     numbers = re.findall(r'\d+', salary_text)
     if numbers:
         salary = int(numbers[0])
-        # If it's a very large number, assume it's annual
+        # Se é um número muito grande, assume que é anual
         if salary > 50000:
             return salary / 12
         return salary
@@ -662,7 +860,7 @@ def extract_required_experience(job_description: str) -> int:
         if matches:
             return int(matches[0])
     
-    # Look for seniority levels
+    # Procura por níveis de senioridade
     if 'senior' in job_description.lower() or 'sênior' in job_description.lower():
         return 5
     elif 'pleno' in job_description.lower() or 'mid' in job_description.lower():
@@ -675,7 +873,7 @@ def extract_required_experience(job_description: str) -> int:
 
 def convert_to_model_format(candidate: Dict, job: Dict, match_score: float, match_label: str) -> Dict:
     """Convert real data to the format expected by the model."""
-    # Map education levels to numeric values
+    # Mapeia níveis educacionais para valores numéricos
     education_mapping = {
         'Ensino Médio': 1,
         'Ensino Superior': 2,
@@ -684,7 +882,7 @@ def convert_to_model_format(candidate: Dict, job: Dict, match_score: float, matc
         'Doutorado': 5
     }
     
-    # Map experience levels to numeric values
+    # Mapeia níveis de experiência para valores numéricos
     req_exp = job['required_experience']
     if req_exp <= 2:
         exp_level = 'junior'
@@ -699,7 +897,7 @@ def convert_to_model_format(candidate: Dict, job: Dict, match_score: float, matc
         exp_level = 'lead'
         exp_level_numeric = 4
     
-    # Calculate derived features
+    # Calcula features derivadas
     candidate_skills = set(skill.strip().lower() for skill in candidate['technical_skills'].split(',') if skill.strip())
     required_skills = set(skill.strip().lower() for skill in job['required_skills'].split(',') if skill.strip())
     
@@ -730,7 +928,7 @@ def convert_to_model_format(candidate: Dict, job: Dict, match_score: float, matc
         'education_numeric': education_mapping.get(candidate['education_level'], 2),
         'match_score': match_score,
         'match_label': match_label,
-        # Store original data for reference
+        # Armazena dados originais para referência
         'candidate_skills': candidate['technical_skills'],
         'required_skills': job['required_skills'],
         'candidate_location': candidate['location'],
@@ -764,15 +962,15 @@ def load_and_validate_data(file_path: str) -> pd.DataFrame:
         if not file_path.exists():
             logger.info(f"Data file {file_path} not found. Trying to load real data first.")
             
-            # Create directory if it doesn't exist
+            # Cria diretório se não existir
             file_path.parent.mkdir(parents=True, exist_ok=True)
             
-            # Try to load real data first
+            # Tenta carregar dados reais primeiro
             df = load_real_data()
             
-            # If real data is empty, generate synthetic data
+            # Se dados reais estão vazios, gera dados sintéticos
             if df.empty:
-                logger.info("Real data not available. Generating synthetic data.")
+                logger.info("Dados reais não disponíveis. Gerando dados sintéticos.")
                 df = generate_synthetic_data()
             
             df.to_csv(file_path, index=False)
@@ -781,13 +979,13 @@ def load_and_validate_data(file_path: str) -> pd.DataFrame:
             df = pd.read_csv(file_path)
             logger.info(f"Loaded {len(df)} samples from {file_path}")
         
-        # Validate required columns
+        # Valida colunas obrigatórias
         required_cols = ['match_score', 'match_label']
         missing_cols = [col for col in required_cols if col not in df.columns]
         if missing_cols:
             raise ValueError(f"Missing required columns: {missing_cols}")
         
-        # Validate data types and ranges
+        # Valida tipos de dados e intervalos
         if df['match_score'].dtype not in ['float64', 'float32']:
             df['match_score'] = pd.to_numeric(df['match_score'], errors='coerce')
         
@@ -826,7 +1024,7 @@ def split_data(
     Returns:
         Tuple of (train_df, test_df)
     """
-    # Features for training (exclude target and metadata columns)
+    # Features para treinamento (exclui colunas target e metadados)
     feature_cols = [
         'age', 'education_numeric', 'years_experience', 'skills_count',
         'skills_match_ratio', 'previous_companies', 'salary_expectation',
@@ -834,7 +1032,7 @@ def split_data(
         'availability_urgency_ratio', 'experience_level_numeric'
     ]
     
-    # Ensure all feature columns exist
+    # Garante que todas as colunas de features existem
     missing_features = [col for col in feature_cols if col not in df.columns]
     if missing_features:
         logger.warning(f"Missing feature columns: {missing_features}")
@@ -847,7 +1045,7 @@ def split_data(
         X, y, test_size=test_size, random_state=random_state, stratify=y
     )
     
-    # Reconstruct full dataframes
+    # Reconstrói dataframes completos
     train_indices = X_train.index
     test_indices = X_test.index
     
@@ -901,26 +1099,26 @@ def create_sample_payload(output_path: str) -> None:
 
 
 if __name__ == "__main__":
-    # Generate sample data for testing
+    # Gera dados de amostra para teste
     data_dir = Path("data")
     data_dir.mkdir(exist_ok=True)
     
-    # Try to load real data first
-    logger.info("Attempting to load real recruitment data...")
+    # Tenta carregar dados reais primeiro
+    logger.info("Tentando carregar dados reais de recrutamento...")
     df = load_real_data()
     
-    # If real data is empty or not available, generate synthetic data
+    # Se dados reais estão vazios ou não disponíveis, gera dados sintéticos
     if df.empty:
-        logger.info("Real data not available. Generating synthetic data.")
+        logger.info("Dados reais não disponíveis. Gerando dados sintéticos.")
         df = generate_synthetic_data(1000)
     
-    # Save the data
+    # Salva os dados
     df.to_csv(data_dir / "sample_candidates.csv", index=False)
     logger.info(f"Data saved to {data_dir / 'sample_candidates.csv'}")
     
-    # Create sample payload
+    # Cria payload de amostra
     create_sample_payload(data_dir / "sample_payload.json")
     
     print(f"Generated {len(df)} samples")
     print(f"Label distribution: {df['match_label'].value_counts()}")
-    logger.info("Data generation completed successfully!")
+    logger.info("Geração de dados concluída com sucesso!")

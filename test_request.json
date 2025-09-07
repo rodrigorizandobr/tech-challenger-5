@@ -1,0 +1,33 @@
+{
+  "candidate": {
+    "age": 28,
+    "education_level": "bachelor",
+    "years_experience": 5,
+    "skills": [
+      "python",
+      "machine learning",
+      "sql",
+      "pandas",
+      "scikit-learn"
+    ],
+    "previous_companies": 2,
+    "salary_expectation": 85000,
+    "location": "São Paulo",
+    "remote_work": true,
+    "availability_days": 30
+  },
+  "job": {
+    "required_experience": "mid",
+    "required_skills": [
+      "python",
+      "sql",
+      "machine learning",
+      "pandas"
+    ],
+    "salary_range_min": 75000,
+    "salary_range_max": 95000,
+    "location": "São Paulo",
+    "remote_allowed": true,
+    "urgency_days": 45
+  }
+}
