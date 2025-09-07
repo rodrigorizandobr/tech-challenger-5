@@ -29,22 +29,27 @@ O Decision AI é uma solução completa de machine learning para automatizar o p
 
 ### Principais Características
 
-- **IA Avançada**: Utiliza algoritmos de machine learning (Random Forest, Gradient Boosting, etc.)
-- **API RESTful**: Interface FastAPI com documentação automática
+- **IA Avançada**: Utiliza algoritmos de machine learning (Random Forest, Gradient Boosting, etc.) treinados com dados reais
+- **API RESTful**: Interface FastAPI com documentação automática em português
+- **Dados Reais**: Processamento de 45.071 candidatos reais e histórico de processos seletivos
+- **Engenharia de Features**: Extração automática de características relevantes dos dados reais
 - **Monitoramento**: Detecção de drift de dados com Evidently AI
 - **Containerização**: Deploy com Docker e Docker Compose
 - **Testes Automatizados**: Cobertura completa com pytest
-- **Dados Sintéticos**: Geração automática de dados para treinamento
+- **Fallback Inteligente**: Geração automática de dados sintéticos quando dados reais não disponíveis
+- **Multilíngue**: Sistema com logs e comentários em português brasileiro
 
 ## ✨ Funcionalidades
 
 ### Core Features
 
-- ✅ **Predição de Match**: Calcula probabilidade de compatibilidade candidato-vaga
-- ✅ **Análise de Fatores**: Identifica quais aspectos influenciam o match
-- ✅ **Recomendações**: Fornece sugestões baseadas na análise
-- ✅ **Validação de Dados**: Validação robusta com Pydantic
-- ✅ **Logging Estruturado**: Logs detalhados para auditoria
+- ✅ **Predição de Match**: Calcula probabilidade de compatibilidade candidato-vaga baseada em dados reais
+- ✅ **Análise de Fatores**: Identifica quais aspectos influenciam o match (skills, experiência, localização, salário)
+- ✅ **Recomendações**: Fornece sugestões baseadas na análise de 45k candidatos reais
+- ✅ **Processamento de Dados Reais**: Extração automática de features de applicants.json, prospects.json, jobs.json
+- ✅ **Validação de Dados**: Validação robusta com Pydantic adaptada para estrutura real
+- ✅ **Logging Estruturado**: Logs detalhados em português brasileiro para auditoria
+- ✅ **Fallback Inteligente**: Sistema funciona com dados sintéticos quando dados reais não disponíveis
 
 ### Monitoramento e Observabilidade
 
@@ -90,22 +95,53 @@ O Decision AI é uma solução completa de machine learning para automatizar o p
 ## 📊 Dados
 
 ### Dados Reais (Produção)
-O sistema foi adaptado para trabalhar com dados reais da Decision:
-- **applicants.json**: 45.071 candidatos reais (194MB)
-- **prospects.json**: Histórico de candidaturas e status
-- **vagas.json**: Vagas reais com requisitos detalhados
+O sistema foi completamente adaptado para trabalhar com dados reais da Decision:
+- **applicants.json**: 45.071 candidatos reais com informações completas (194MB)
+- **prospects.json**: Histórico detalhado de candidaturas e status de processos seletivos
+- **jobs.json**: Vagas reais com requisitos técnicos e comportamentais detalhados
+
+### Estrutura dos Dados Reais
+
+#### Candidatos (applicants.json)
+- **Informações Pessoais**: Nome, idade, localização, contatos
+- **Formação Acadêmica**: Cursos, instituições, períodos
+- **Experiência Profissional**: Empresas, cargos, períodos, responsabilidades
+- **Habilidades Técnicas**: Linguagens de programação, frameworks, ferramentas
+- **Habilidades Comportamentais**: Soft skills identificadas
+- **Preferências**: Modalidade de trabalho, expectativa salarial, disponibilidade
+
+#### Vagas (jobs.json)
+- **Requisitos Técnicos**: Tecnologias obrigatórias e desejáveis
+- **Experiência**: Nível de senioridade exigido
+- **Localização**: Cidade, estado, modalidade (presencial/remoto/híbrido)
+- **Benefícios**: Pacote de benefícios oferecido
+- **Descrição**: Responsabilidades e desafios da posição
+
+#### Histórico de Processos (prospects.json)
+- **Candidaturas**: Relacionamento candidato-vaga
+- **Status**: Etapas do processo seletivo
+- **Feedback**: Avaliações e comentários dos recrutadores
+- **Resultados**: Aprovações, reprovações e motivos
 
 ⚠️ **Nota**: Os arquivos de dados reais não estão incluídos no repositório devido ao tamanho (>100MB). Para usar o sistema:
 
 1. **Obtenha os dados reais** e coloque na pasta `data/`
-2. **Execute o treinamento**: `python3 quick_train.py`
+2. **Execute o treinamento**: `python src/train.py`
 3. **Inicie a API**: `uvicorn app.main:app --reload`
 
 ### Dados Sintéticos (Fallback)
-Se os dados reais não estiverem disponíveis, o sistema gera dados sintéticos automaticamente:
-- **Candidatos**: Informações pessoais, educação, experiência, habilidades
-- **Vagas**: Requisitos, localização, salário, modalidade de trabalho
-- **Matches**: Histórico de compatibilidade entre candidatos e vagas
+Se os dados reais não estiverem disponíveis, o sistema gera dados sintéticos automaticamente que simulam a estrutura real:
+- **Candidatos**: Informações pessoais, educação, experiência, habilidades técnicas e comportamentais
+- **Vagas**: Requisitos técnicos, localização, salário, modalidade de trabalho
+- **Matches**: Histórico de compatibilidade entre candidatos e vagas baseado em critérios reais
+
+### Processamento e Features
+O sistema extrai automaticamente features relevantes dos dados reais:
+- **Match de Habilidades**: Compatibilidade entre skills do candidato e requisitos da vaga
+- **Experiência**: Análise de senioridade e tempo de experiência
+- **Localização**: Compatibilidade geográfica e preferências de trabalho remoto
+- **Salário**: Alinhamento entre expectativa e oferta
+- **Perfil Comportamental**: Análise de soft skills e fit cultural
 
 ## 🚀 Instalação
 
@@ -150,14 +186,21 @@ make api        # Executar API
 ### Opção 2: Comandos Manuais
 
 ```bash
-# 1. Gerar dados sintéticos
+# 1. Processar dados reais (se disponíveis) ou gerar sintéticos
 python -m src.data
 
-# 2. Treinar modelo
-python -m src.train --data-path data/sample_candidates.csv
+# 2. Treinar modelo com dados reais ou sintéticos
+python -m src.train
 
 # 3. Executar API
 uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+```
+
+### Opção 3: Treinamento Rápido com Dados Reais
+
+```bash
+# Script otimizado para dados reais (se disponíveis)
+python quick_train.py
 ```
 
 ### Opção 3: Docker
@@ -430,8 +473,11 @@ tech-challenger-5/
 │   ├── test_data.py      # Testes do módulo de dados
 │   └── test_api.py       # Testes da API
 ├── data/                  # Dados de treinamento
-│   ├── sample_candidates.csv
-│   └── sample_payload.json
+│   ├── applicants.json    # Candidatos reais (não versionado)
+│   ├── prospects.json     # Histórico de processos (não versionado)
+│   ├── jobs.json         # Vagas reais (não versionado)
+│   ├── sample_candidates.csv # Dados sintéticos de fallback
+│   └── sample_payload.json   # Exemplo de payload para API
 ├── models/                # Modelos treinados
 │   ├── model.joblib
 │   └── training_metadata.json
@@ -451,56 +497,7 @@ tech-challenger-5/
 ```
 
 ## 🎥 Vídeo Demonstrativo
-
-Para gravar um vídeo de 5 minutos demonstrando o sistema:
-
-### Roteiro Sugerido
-
-1. **Introdução (30s)**
-   - Apresentar o projeto Decision AI
-   - Mostrar objetivos e funcionalidades
-
-2. **Arquitetura (1min)**
-   - Explicar stack tecnológica
-   - Mostrar estrutura do projeto
-   - Destacar componentes principais
-
-3. **Treinamento (1min)**
-   - Demonstrar geração de dados sintéticos
-   - Executar treinamento do modelo
-   - Mostrar métricas de performance
-
-4. **API em Funcionamento (2min)**
-   - Executar a API
-   - Demonstrar endpoints principais
-   - Fazer predições com Postman
-   - Mostrar documentação automática
-
-5. **Docker e Monitoramento (1min)**
-   - Executar com Docker
-   - Mostrar relatório de drift
-   - Demonstrar métricas do sistema
-
-6. **Conclusão (30s)**
-   - Resumir benefícios
-   - Mencionar possibilidades de deploy
-
-### Comandos para o Vídeo
-
-```bash
-# Setup e execução rápida
-make quick-start
-
-# Demonstrar Docker
-make docker-build
-make docker-run
-
-# Gerar relatório de drift
-make monitor
-
-# Executar testes
-make test
-```
+[Vídeo Demonstrativo](inserir URL aqui)
 
 ## 🤝 Contribuição
 
@@ -546,16 +543,5 @@ test(api): add integration tests for health endpoint
 ## 📄 Licença
 
 Este projeto está licenciado sob a MIT License - veja o arquivo [LICENSE](LICENSE) para detalhes.
-
-## 📞 Suporte
-
-Para dúvidas ou problemas:
-
-1. Verifique a [documentação da API](http://localhost:8000/docs)
-2. Consulte os [logs do sistema](logs/)
-3. Execute os [testes](tests/) para verificar o ambiente
-4. Abra uma issue no repositório
-
----
-
-**Decision AI** - Transformando recrutamento com inteligência artificial 🚀
+Desenvolvido pra o curso MLE Turma 4 - FIAP
+Alunos: Rodrigo Matheus da Silva (rodrigorizando@gmail.com) e Vitor Efigênio Neto (vitorefigenio@gmail.com)

@@ -1,8 +1,12 @@
-# Python
+# Arquivos compilados / otimizados / DLL
 __pycache__/
 *.py[cod]
 *$py.class
+
+# Extensões C
 *.so
+
+# Distribuição / empacotamento
 .Python
 build/
 develop-eggs/
@@ -16,26 +20,145 @@ parts/
 sdist/
 var/
 wheels/
+share/python-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
-PYTHONPATH
+MANIFEST
 
-# Virtual Environment
-venv/
+# PyInstaller
+*.manifest
+*.spec
+
+# Logs do instalador
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Relatórios de teste unitário / cobertura
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+cover/
+
+# Traduções
+*.mo
+*.pot
+
+# Coisas do Django:
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Coisas do Flask:
+instance/
+.webassets-cache
+
+# Coisas do Scrapy:
+.scrapy
+
+# Documentação Sphinx
+docs/_build/
+
+# PyBuilder
+.pybuilder/
+target/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IPython
+profile_default/
+ipython_config.py
+
+# pyenv
+.python-version
+
+# pipenv
+Pipfile.lock
+
+# poetry
+poetry.lock
+
+# pdm
+.pdm.toml
+
+# PEP 582
+__pypackages__/
+
+# Coisas do Celery
+celerybeat-schedule
+celerybeat.pid
+
+# Arquivos analisados do SageMath
+*.sage.py
+
+# Ambientes
+.env
+.venv
 env/
+venv/
 ENV/
-.venv/
-.env/
+env.bak/
+venv.bak/
+.env.local
+.env.production
 
-# IDE
-.vscode/
+# Configurações do projeto Spyder
+.spyderproject
+.spyproject
+
+# Configurações do projeto Rope
+.ropeproject
+
+# Documentação mkdocs
+/site
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Verificador de tipos Pyre
+.pyre/
+
+# Analisador de tipos estático pytype
+.pytype/
+
+# Símbolos de debug do Cython
+cython_debug/
+
+# PyCharm
 .idea/
+
+# VS Code
+.vscode/
+
+# Vim
 *.swp
 *.swo
 *~
 
-# OS
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# Arquivos gerados pelo SO
 .DS_Store
 .DS_Store?
 ._*
@@ -44,55 +167,55 @@ ENV/
 ehthumbs.db
 Thumbs.db
 
-# Logs
-logs/
-*.log
-
-# Data files (large JSON files)
+# Específico do projeto
+# Arquivos de dados (arquivos JSON grandes)
 data/applicants.json
 data/prospects.json
 data/jobs.json
 
-# Model files (can be large)
+# Arquivos de modelo (podem ser grandes)
 models/*.joblib
 models/*.pkl
 models/*.h5
+models/*.pt
+models/*.pth
+models/*.onnx
 src/models/*.joblib
+src/models/*.pkl
+src/models/*.h5
+src/models/*.pt
+src/models/*.pth
 
-# Reports
+# Relatórios e saídas
 reports/*.html
 reports/*.json
+reports/*.pdf
+logs/
 
-# Temporary files
+# Arquivos temporários
 *.tmp
 *.temp
-
-# Environment variables
-.env
-.env.local
-.env.production
-.venv
-
-# Coverage reports
-htmlcov/
-.coverage
-.coverage.*
-coverage.xml
-*.cover
-.hypothesis/
-.pytest_cache/
-
-# Jupyter Notebook
-.ipynb_checkpoints
-
-# pyenv
-.python-version
-
-# pipenv
-Pipfile.lock
+*.bak
 
 # Docker
 .dockerignore
 
-# Quick training script (temporary)
+# MLflow
+mlruns/
+mlartifacts/
+
+# Weights & Biases
+wandb/
+
+# TensorBoard
+runs/
+
+# Script de treinamento rápido (temporário)
 quick_train.py
+
+# Checkpoints de notebook
+.ipynb_checkpoints/
+
+# Configuração local
+config.local.json
+config.local.yaml
