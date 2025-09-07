@@ -1,0 +1,32 @@
+{
+  "model_type": "RandomForestClassifier",
+  "training_date": "2025-09-07T07:22:00.962813",
+  "parameters": {
+    "n_estimators": 100,
+    "max_depth": 15,
+    "min_samples_split": 2,
+    "min_samples_leaf": 4
+  },
+  "test_metrics": {
+    "f1_score": 0.5153884964682139,
+    "roc_auc": 0.40045633378966716,
+    "accuracy": 0.5738214087631724
+  },
+  "feature_names": [
+    "age",
+    "education_numeric",
+    "years_experience",
+    "skills_count",
+    "skills_match_ratio",
+    "previous_companies",
+    "salary_expectation",
+    "salary_fit",
+    "location_match",
+    "remote_compatibility",
+    "availability_urgency_ratio",
+    "experience_level_numeric"
+  ],
+  "training_samples": 36056,
+  "test_samples": 9015,
+  "calibrated": true
+}

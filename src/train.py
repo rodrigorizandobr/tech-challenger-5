@@ -210,29 +210,29 @@ class ModelTrainer:
         """
         logger.info(f"Tuning hyperparameters for {model_name}")
         
-        # Define parameter grids
+        # Define parameter grids (optimized for speed)
         param_grids = {
             'random_forest': {
-                'model__n_estimators': [50, 100, 200],
-                'model__max_depth': [5, 10, 15, None],
-                'model__min_samples_split': [2, 5, 10],
-                'model__min_samples_leaf': [1, 2, 4]
+                'model__n_estimators': [50, 100],
+                'model__max_depth': [10, 15],
+                'model__min_samples_split': [2, 5],
+                'model__min_samples_leaf': [2, 4]
             },
             'gradient_boosting': {
-                'model__n_estimators': [50, 100, 200],
-                'model__learning_rate': [0.05, 0.1, 0.2],
-                'model__max_depth': [3, 5, 7],
-                'model__subsample': [0.8, 0.9, 1.0]
+                'model__n_estimators': [50, 100],
+                'model__learning_rate': [0.1, 0.2],
+                'model__max_depth': [3, 5],
+                'model__subsample': [0.8, 1.0]
             },
             'logistic_regression': {
-                'model__C': [0.1, 1.0, 10.0, 100.0],
-                'model__penalty': ['l1', 'l2'],
-                'model__solver': ['liblinear', 'saga']
+                'model__C': [1.0, 10.0],
+                'model__penalty': ['l2'],
+                'model__solver': ['liblinear']
             },
             'svm': {
-                'model__C': [0.1, 1.0, 10.0],
-                'model__gamma': ['scale', 'auto', 0.001, 0.01],
-                'model__kernel': ['rbf', 'poly']
+                'model__C': [1.0, 10.0],
+                'model__gamma': ['scale', 'auto'],
+                'model__kernel': ['rbf']
             }
         }
         

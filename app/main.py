@@ -223,15 +223,13 @@ def create_prediction_features(request: PredictionRequest) -> pd.DataFrame:
 
 
 def extract_model_features(df: pd.DataFrame) -> pd.DataFrame:
-    """Extract features used by the model."""
+    """Extract features used by the model (from training metadata)."""
+    # Use exact features from training metadata
     feature_cols = [
         'age', 'education_numeric', 'years_experience', 'skills_count',
         'skills_match_ratio', 'previous_companies', 'salary_expectation',
         'salary_fit', 'location_match', 'remote_compatibility',
-        'availability_urgency_ratio', 'experience_level_numeric',
-        'skill_diversity', 'rare_skills_bonus', 'salary_position',
-        'salary_expectation_ratio', 'experience_education_ratio',
-        'salary_range_width', 'company_stability'
+        'availability_urgency_ratio', 'experience_level_numeric'
     ]
     
     # Filter to available columns
@@ -240,6 +238,10 @@ def extract_model_features(df: pd.DataFrame) -> pd.DataFrame:
     if len(available_cols) < len(feature_cols):
         missing_cols = set(feature_cols) - set(available_cols)
         logger.warning(f"Missing feature columns: {missing_cols}")
+        # Fill missing columns with default values
+        for col in missing_cols:
+            df[col] = 0.0
+        available_cols = feature_cols
     
     return df[available_cols]
 
