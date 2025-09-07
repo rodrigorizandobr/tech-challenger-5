@@ -57,6 +57,7 @@ data/jobs.json
 models/*.joblib
 models/*.pkl
 models/*.h5
+src/models/*.joblib
 
 # Reports
 reports/*.html
@@ -70,6 +71,7 @@ reports/*.json
 .env
 .env.local
 .env.production
+.venv
 
 # Coverage reports
 htmlcov/
