@@ -87,6 +87,26 @@ O Decision AI é uma solução completa de machine learning para automatizar o p
 - **Containerização**: Docker, Docker Compose
 - **Qualidade**: Black, Ruff, MyPy
 
+## 📊 Dados
+
+### Dados Reais (Produção)
+O sistema foi adaptado para trabalhar com dados reais da Decision:
+- **applicants.json**: 45.071 candidatos reais (194MB)
+- **prospects.json**: Histórico de candidaturas e status
+- **vagas.json**: Vagas reais com requisitos detalhados
+
+⚠️ **Nota**: Os arquivos de dados reais não estão incluídos no repositório devido ao tamanho (>100MB). Para usar o sistema:
+
+1. **Obtenha os dados reais** e coloque na pasta `data/`
+2. **Execute o treinamento**: `python3 quick_train.py`
+3. **Inicie a API**: `uvicorn app.main:app --reload`
+
+### Dados Sintéticos (Fallback)
+Se os dados reais não estiverem disponíveis, o sistema gera dados sintéticos automaticamente:
+- **Candidatos**: Informações pessoais, educação, experiência, habilidades
+- **Vagas**: Requisitos, localização, salário, modalidade de trabalho
+- **Matches**: Histórico de compatibilidade entre candidatos e vagas
+
 ## 🚀 Instalação
 
 ### Pré-requisitos
