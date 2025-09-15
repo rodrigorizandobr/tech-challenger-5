@@ -1,4 +1,4 @@
-"""Tests for data module."""
+"""Testes para módulo de dados."""
 
 import pytest
 import pandas as pd
@@ -14,10 +14,10 @@ from src.data import (
 
 
 class TestGenerateSyntheticData:
-    """Test synthetic data generation."""
+    """Testes para geração de dados sintéticos."""
     
     def test_generate_synthetic_data_basic(self):
-        """Test basic synthetic data generation."""
+        """Testa geração básica de dados sintéticos."""
         df = generate_synthetic_data(n_samples=100, seed=42)
         
         assert isinstance(df, pd.DataFrame)
@@ -31,14 +31,14 @@ class TestGenerateSyntheticData:
         assert df['match_label'].dtype == 'object'
     
     def test_generate_synthetic_data_reproducible(self):
-        """Test that synthetic data generation is reproducible."""
+        """Testa reprodutibilidade na geração de dados sintéticos."""
         df1 = generate_synthetic_data(n_samples=50, seed=42)
         df2 = generate_synthetic_data(n_samples=50, seed=42)
         
         pd.testing.assert_frame_equal(df1, df2)
     
     def test_generate_synthetic_data_different_seeds(self):
-        """Test that different seeds produce different data."""
+        """Testa que diferentes seeds produzem dados diferentes."""
         df1 = generate_synthetic_data(n_samples=50, seed=42)
         df2 = generate_synthetic_data(n_samples=50, seed=123)
         
@@ -46,7 +46,7 @@ class TestGenerateSyntheticData:
         assert not df1.equals(df2)
     
     def test_synthetic_data_columns(self):
-        """Test that all expected columns are present."""
+        """Testa se todas as colunas esperadas estão presentes."""
         df = generate_synthetic_data(n_samples=10)
         
         expected_columns = [
@@ -58,10 +58,10 @@ class TestGenerateSyntheticData:
         ]
         
         for col in expected_columns:
-            assert col in df.columns, f"Missing column: {col}"
+            assert col in df.columns, f"Coluna missing: {col}"
     
     def test_synthetic_data_ranges(self):
-        """Test that synthetic data values are within expected ranges."""
+        """Testa se os valores sintéticos estão dentro dos intervalos esperados."""
         df = generate_synthetic_data(n_samples=100, seed=42)
         
         # Age should be between 22 and 65
@@ -79,7 +79,7 @@ class TestGenerateSyntheticData:
         assert df['skills_count'].min() > 0
     
     def test_match_label_distribution(self):
-        """Test that match labels are properly distributed."""
+        """Testa se as labels de correspondência estão distribuídas corretamente."""
         df = generate_synthetic_data(n_samples=1000, seed=42)
         
         label_counts = df['match_label'].value_counts()
@@ -95,10 +95,10 @@ class TestGenerateSyntheticData:
 
 
 class TestCalculateMatchScore:
-    """Test match score calculation."""
+    """Testa cálculo de pontuação de correspondência."""
     
     def test_perfect_match(self):
-        """Test perfect match scenario."""
+        """Testa cenário de correspondência perfeita."""
         score = calculate_match_score(
             years_exp=8,
             req_exp_level='senior',
@@ -119,7 +119,7 @@ class TestCalculateMatchScore:
         assert score > 0.8  # Should be high score
     
     def test_poor_match(self):
-        """Test poor match scenario."""
+        """Testa cenário de correspondência ruim."""
         score = calculate_match_score(
             years_exp=1,
             req_exp_level='senior',
@@ -140,8 +140,8 @@ class TestCalculateMatchScore:
         assert score < 0.4  # Should be low score
     
     def test_score_range(self):
-        """Test that score is always between 0 and 1."""
-        # Test multiple scenarios
+        """Testa que o score está sempre entre 0 e 1."""
+        # Testa múltiplos cenários
         test_cases = [
             (0, 'junior', [], ['python'], 0, 50000, 60000, 'A', 'B', False, False, 365, 1, 'high_school'),
             (20, 'lead', ['python'] * 20, ['python'], 200000, 50000, 60000, 'A', 'B', True, True, 1, 365, 'phd')
@@ -149,10 +149,10 @@ class TestCalculateMatchScore:
         
         for case in test_cases:
             score = calculate_match_score(*case)
-            assert 0 <= score <= 1, f"Score {score} out of range for case {case}"
+            assert 0 <= score <= 1, f"Score {score} está fora do intervalo [0, 1] para o caso {case}"
     
     def test_skills_impact(self):
-        """Test that skills matching impacts score."""
+        """Testa que a correspondência de habilidades afeta a pontuação."""
         base_args = {
             'years_exp': 5,
             'req_exp_level': 'mid',
@@ -186,10 +186,10 @@ class TestCalculateMatchScore:
 
 
 class TestLoadAndValidateData:
-    """Test data loading and validation."""
+    """Testa carregamento e validação de dados."""
     
     def test_load_nonexistent_file(self):
-        """Test loading non-existent file creates synthetic data."""
+        """Testa carregamento de arquivo não existente cria dados sintéticos."""
         with tempfile.TemporaryDirectory() as temp_dir:
             file_path = os.path.join(temp_dir, 'test_data.csv')
             
@@ -200,11 +200,11 @@ class TestLoadAndValidateData:
             assert Path(file_path).exists()
     
     def test_load_existing_file(self):
-        """Test loading existing valid file."""
+        """Testa carregamento de arquivo existente."""
         with tempfile.TemporaryDirectory() as temp_dir:
             file_path = os.path.join(temp_dir, 'test_data.csv')
             
-            # Create test data
+            # Cria dados de teste
             test_data = pd.DataFrame({
                 'age': [25, 30, 35],
                 'match_score': [0.7, 0.8, 0.6],
@@ -219,28 +219,28 @@ class TestLoadAndValidateData:
             assert 'match_label' in df.columns
     
     def test_validate_missing_columns(self):
-        """Test validation with missing required columns."""
+        """Testa validação com colunas obrigatórias ausentes."""
         with tempfile.TemporaryDirectory() as temp_dir:
             file_path = os.path.join(temp_dir, 'invalid_data.csv')
             
-            # Create invalid data (missing required columns)
+            # Cria dados inválidos (colunas obrigatórias ausentes)
             invalid_data = pd.DataFrame({
                 'age': [25, 30, 35],
                 'name': ['A', 'B', 'C']
             })
             invalid_data.to_csv(file_path, index=False)
             
-            with pytest.raises(ValueError, match="Missing required columns"):
+            with pytest.raises(ValueError, match="Colunas obrigatórias ausentes"):
                 load_and_validate_data(file_path)
     
     def test_validate_invalid_match_scores(self):
-        """Test validation with invalid match scores."""
+        """Testa validação com scores de correspondência inválidos."""
         with tempfile.TemporaryDirectory() as temp_dir:
             file_path = os.path.join(temp_dir, 'invalid_scores.csv')
             
-            # Create data with invalid match scores
+            # Cria dados com scores de correspondência inválidos
             invalid_data = pd.DataFrame({
-                'match_score': [1.5, -0.5, 0.7],  # Invalid values
+                'match_score': [1.5, -0.5, 0.7],  # Valores inválidos
                 'match_label': ['good_match', 'good_match', 'poor_match']
             })
             invalid_data.to_csv(file_path, index=False)
@@ -249,14 +249,14 @@ class TestLoadAndValidateData:
                 load_and_validate_data(file_path)
     
     def test_validate_invalid_labels(self):
-        """Test validation with invalid match labels."""
+        """Testa validação com rótulos de correspondência inválidos."""
         with tempfile.TemporaryDirectory() as temp_dir:
             file_path = os.path.join(temp_dir, 'invalid_labels.csv')
             
-            # Create data with invalid labels
+            # Cria dados com rótulos inválidos
             invalid_data = pd.DataFrame({
                 'match_score': [0.7, 0.8, 0.6],
-                'match_label': ['good', 'bad', 'maybe']  # Invalid labels
+                'match_label': ['bom', 'ruim', 'talvez']  # Rótulos inválidos
             })
             invalid_data.to_csv(file_path, index=False)
             
@@ -265,10 +265,11 @@ class TestLoadAndValidateData:
 
 
 class TestSplitData:
-    """Test data splitting."""
+    """Testa divisão de dados."""
     
     def test_split_data_basic(self):
-        """Test basic data splitting."""
+        """Testa divisão básica de dados."""
+        # Gera dados sintéticos
         df = generate_synthetic_data(n_samples=100, seed=42)
         
         train_df, test_df = split_data(df, test_size=0.2, random_state=42)
@@ -278,7 +279,7 @@ class TestSplitData:
         assert len(train_df) + len(test_df) == len(df)
     
     def test_split_data_stratified(self):
-        """Test that splitting maintains label distribution."""
+        """Testa divisão estratificada de dados."""
         df = generate_synthetic_data(n_samples=1000, seed=42)
         
         original_ratio = (df['match_label'] == 'good_match').mean()
@@ -293,7 +294,7 @@ class TestSplitData:
         assert abs(test_ratio - original_ratio) < 0.05
     
     def test_split_data_reproducible(self):
-        """Test that splitting is reproducible."""
+        """Testa reproducibilidade da divisão."""
         df = generate_synthetic_data(n_samples=100, seed=42)
         
         train1, test1 = split_data(df, test_size=0.2, random_state=42)
@@ -303,7 +304,7 @@ class TestSplitData:
         pd.testing.assert_frame_equal(test1, test2)
     
     def test_split_data_different_sizes(self):
-        """Test splitting with different test sizes."""
+        """Testa divisão com diferentes tamanhos de teste."""
         df = generate_synthetic_data(n_samples=100, seed=42)
         
         for test_size in [0.1, 0.3, 0.5]:
@@ -317,10 +318,10 @@ class TestSplitData:
 
 
 class TestCreateSamplePayload:
-    """Test sample payload creation."""
+    """Testa criação de payload de amostra."""
     
     def test_create_sample_payload(self):
-        """Test sample payload creation."""
+        """Testa criação de payload de amostra."""
         with tempfile.TemporaryDirectory() as temp_dir:
             output_path = os.path.join(temp_dir, 'sample.json')
             
@@ -333,6 +334,7 @@ class TestCreateSamplePayload:
             with open(output_path, 'r') as f:
                 payload = json.load(f)
             
+            # Verifica se o payload contém as chaves esperadas
             assert 'candidate' in payload
             assert 'job' in payload
             

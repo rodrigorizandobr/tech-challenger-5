@@ -1,4 +1,4 @@
-"""Schemas and data models for the recruitment AI system."""
+"""Schemas e modelos de dados para o sistema de IA de recrutamento."""
 
 from typing import List, Optional, Dict, Any
 from pydantic import BaseModel, Field, validator
@@ -7,7 +7,7 @@ from datetime import datetime
 
 
 class ExperienceLevel(str, Enum):
-    """Experience level enumeration."""
+    """Nível de experiência enumeration."""
     JUNIOR = "junior"
     MID = "mid"
     SENIOR = "senior"
@@ -15,7 +15,7 @@ class ExperienceLevel(str, Enum):
 
 
 class EducationLevel(str, Enum):
-    """Education level enumeration."""
+    """Enumeração de nível educacional."""
     HIGH_SCHOOL = "high_school"
     ENSINO_MEDIO = "Ensino Médio"
     BACHELOR = "bachelor"
@@ -28,7 +28,7 @@ class EducationLevel(str, Enum):
 
 
 class LanguageLevel(str, Enum):
-    """Language proficiency level enumeration."""
+    """Enumeração de nível de proficiência em língua."""
     NENHUM = "Nenhum"
     BASICO = "Básico"
     INTERMEDIARIO = "Intermediário"
@@ -37,7 +37,7 @@ class LanguageLevel(str, Enum):
 
 
 class AreaAtuacao(str, Enum):
-    """Area of expertise enumeration."""
+    """Enumeração de área de atuação."""
     TECNOLOGIA = "Tecnologia"
     VENDAS = "Vendas"
     MARKETING = "Marketing"
@@ -47,80 +47,80 @@ class AreaAtuacao(str, Enum):
 
 
 class CandidateInput(BaseModel):
-    """Schema for candidate input data."""
-    age: int = Field(..., ge=18, le=70, description="Candidate age")
-    education_level: EducationLevel = Field(..., description="Education level")
-    years_experience: int = Field(..., ge=0, le=50, description="Years of experience")
+    """Modelo de dados de entrada do candidato."""
+    age: int = Field(..., ge=18, le=70, description="Idade do candidato")
+    education_level: EducationLevel = Field(..., description="Nível de educação")
+    years_experience: int = Field(..., ge=0, le=50, description="Anos de experiência")
     skills: List[str] = Field(
-        ..., min_items=1, max_items=20, description="List of skills"
+        ..., min_items=1, max_items=20, description="Habilidades do candidato"
     )
     previous_companies: int = Field(
-        ..., ge=0, le=20, description="Number of previous companies"
+        ..., ge=0, le=20, description="Quantidade de empresas anteriores"
     )
-    salary_expectation: float = Field(..., ge=0, description="Expected salary")
+    salary_expectation: float = Field(..., ge=0, description="Expectativa salarial")
     location: str = Field(
-        ..., min_length=2, max_length=100, description="Location"
+        ..., min_length=2, max_length=100, description="Localização"
     )
-    remote_work: bool = Field(..., description="Accepts remote work")
+    remote_work: bool = Field(..., description="Aceita trabalho remoto")
     availability_days: int = Field(
-        ..., ge=1, le=365, description="Days until availability"
+        ..., ge=1, le=365, description="Dias até a disponibilidade"
     )
 
     @validator('skills')
     def validate_skills(cls, v):
-        """Validate skills list."""
+        """Valida a lista de habilidades."""
         if not v:
-            raise ValueError("Skills list cannot be empty")
+            raise ValueError("Lista de habilidades não pode ser vazia")
         # Remove duplicidades e converte para minúsculas
         return list(set(skill.strip().lower() for skill in v if skill.strip()))
 
     @validator('location')
     def validate_location(cls, v):
-        """Validate location string."""
+        """Valida string de localização."""
         return v.strip().title()
 
 
 class JobRequirements(BaseModel):
-    """Schema for job requirements."""
+    """Schema para requisitos de trabalho."""
     required_experience: ExperienceLevel = Field(
-        ..., description="Required experience level"
+        ..., description="Nível de experiência requerido"
     )
     required_skills: List[str] = Field(
-        ..., min_items=1, description="Required skills"
+        ..., min_items=1, description="Habilidades requeridas"
     )
-    salary_range_min: float = Field(..., ge=0, description="Minimum salary")
-    salary_range_max: float = Field(..., ge=0, description="Maximum salary")
-    location: str = Field(..., description="Job location")
-    remote_allowed: bool = Field(..., description="Remote work allowed")
-    urgency_days: int = Field(..., ge=1, description="Days to fill position")
+    salary_range_min: float = Field(..., ge=0, description="Salário mínimo")
+    salary_range_max: float = Field(..., ge=0, description="Salário máximo")
+    location: str = Field(..., description="Localização do trabalho")
+    remote_allowed: bool = Field(..., description="Trabalho remoto permitido")
+    urgency_days: int = Field(..., ge=1, description="Dias até preencher posição")
 
     @validator('salary_range_max')
     def validate_salary_range(cls, v, values):
-        """Validate salary range."""
+        """Valida faixa salarial."""
         if 'salary_range_min' in values and v < values['salary_range_min']:
-            raise ValueError("Maximum salary must be greater than minimum salary")
+            raise ValueError("Salário máximo deve ser maior que salário mínimo")
         return v
 
     @validator('required_skills')
     def validate_required_skills(cls, v):
-        """Validate required skills list."""
+        """Valida lista de habilidades requeridas."""
         if not v:
-            raise ValueError("Required skills list cannot be empty")
+            raise ValueError("Lista de habilidades requeridas não pode ser vazia")
         return list(set(skill.strip().lower() for skill in v if skill.strip()))
 
     @validator('location')
     def validate_location(cls, v):
-        """Validate location string."""
+        """Valida string de localização."""
         return v.strip().title()
 
 
 class PredictionRequest(BaseModel):
-    """Schema for prediction request."""
+    """Schema para requisição de predição."""
     candidate: CandidateInput
     job: JobRequirements
 
     class Config:
-        """Pydantic configuration."""
+        """Configuração do Pydantic."""
         schema_extra = {
             "example": {
                 "candidate": {
@@ -148,18 +148,18 @@ class PredictionRequest(BaseModel):
 
 
 class PredictionResponse(BaseModel):
-    """Schema for prediction response."""
+    """Schema para resposta de predição."""
     match_probability: float = Field(
-        ..., ge=0, le=1, description="Match probability"
+        ..., ge=0, le=1, description="Probabilidade de correspondência"
     )
-    match_label: str = Field(..., description="Match classification")
-    confidence: float = Field(..., ge=0, le=1, description="Prediction confidence")
-    factors: Dict[str, float] = Field(..., description="Contributing factors")
-    recommendation: str = Field(..., description="Hiring recommendation")
+    match_label: str = Field(..., description="Classificação de correspondência")
+    confidence: float = Field(..., ge=0, le=1, description="Confiança na predição")
+    factors: Dict[str, float] = Field(..., description="Fatores contribuindo")
+    recommendation: str = Field(..., description="Recomendação de contratação")
     timestamp: datetime = Field(default_factory=datetime.now)
 
     class Config:
-        """Pydantic configuration."""
+        """Configuração do Pydantic."""
         schema_extra = {
             "example": {
                 "match_probability": 0.85,
@@ -171,172 +171,172 @@ class PredictionResponse(BaseModel):
                     "salary_fit": 0.85,
                     "location_compatibility": 1.0
                 },
-                "recommendation": "Strong candidate - recommend for interview",
+                "recommendation": "Recomendação de contratação: Alto",
                 "timestamp": "2024-01-15T10:30:00"
             }
         }
 
 
 class HealthResponse(BaseModel):
-    """Schema for health check response."""
-    status: str = Field(..., description="Service status")
-    model_loaded: bool = Field(..., description="Model loading status")
+    """Schema para resposta de verificação de saúde."""
+    status: str = Field(..., description="Status do serviço")
+    model_loaded: bool = Field(..., description="Status de carregamento do modelo")
     timestamp: datetime = Field(default_factory=datetime.now)
     version: str = Field(..., description="API version")
-    uptime_seconds: float = Field(..., description="Service uptime in seconds")
+    uptime_seconds: float = Field(..., description="Tempo de funcionamento em segundos")
 
 
 class MetricsResponse(BaseModel):
     """Schema for metrics response."""
-    total_predictions: int = Field(..., description="Total predictions made")
+    total_predictions: int = Field(..., description="Total de predições realizadas")
     avg_match_probability: float = Field(
-        ..., description="Average match probability"
+        ..., description="Probabilidade média de correspondência"
     )
     predictions_last_24h: int = Field(
-        ..., description="Predictions in last 24 hours"
+        ..., description="Predições nas últimas 24 horas"
     )
     model_accuracy: Optional[float] = Field(
-        None, description="Model accuracy if available"
+        None, description="Acurácia do modelo, se disponível"
     )
-    drift_detected: bool = Field(..., description="Data drift detection status")
+    drift_detected: bool = Field(..., description="Detecção de drift de dados")
     last_retrain: Optional[datetime] = Field(
-        None, description="Last model retrain timestamp"
+        None, description="Último treinamento do modelo"
     )
-    system_health: str = Field(..., description="Overall system health")
+    system_health: str = Field(..., description="Qualidade geral do sistema")
 
 
 class ErrorResponse(BaseModel):
-    """Schema for error responses."""
-    error: str = Field(..., description="Error type")
-    message: str = Field(..., description="Error message")
+    """Schema para respostas de erro."""
+    error: str = Field(..., description="Tipo de erro")
+    message: str = Field(..., description="Mensagem de erro")
     details: Optional[Dict[str, Any]] = Field(
-        None, description="Additional error details"
+        None, description="Detalhes adicionais do erro"
     )
     timestamp: datetime = Field(default_factory=datetime.now)
 
 
 class PredictionLog(BaseModel):
-    """Schema for prediction logging."""
-    request_id: str = Field(..., description="Unique request identifier")
-    candidate_data: Dict[str, Any] = Field(..., description="Candidate input data")
-    job_data: Dict[str, Any] = Field(..., description="Job requirements data")
-    prediction: PredictionResponse = Field(..., description="Prediction result")
+    """Schema para log de predição."""
+    request_id: str = Field(..., description="Identificador único da requisição")
+    candidate_data: Dict[str, Any] = Field(..., description="Dados do candidato")
+    job_data: Dict[str, Any] = Field(..., description="Dados do job")
+    prediction: PredictionResponse = Field(..., description="Predição")
     processing_time_ms: float = Field(
-        ..., description="Processing time in milliseconds"
+        ..., description="Tempo de processamento em milissegundos"
     )
     timestamp: datetime = Field(default_factory=datetime.now)
-    model_version: str = Field(..., description="Model version used")
+    model_version: str = Field(..., description="Versão do modelo usada")
 
 
 # Schemas for original data structures
 
 class InfosBasicas(BaseModel):
-    """Schema for basic candidate information."""
-    nome: Optional[str] = Field(None, description="Candidate name")
-    email: Optional[str] = Field(None, description="Email address")
-    telefone: Optional[str] = Field(None, description="Phone number")
+    """Schema para informações básicas do candidato."""
+    nome: Optional[str] = Field(None, description="Nome do candidato")  
+    email: Optional[str] = Field(None, description="Email do candidato")
+    telefone: Optional[str] = Field(None, description="Telefone do candidato")
 
 
 class InformacoesPessoais(BaseModel):
-    """Schema for personal information."""
-    data_nascimento: Optional[str] = Field(None, description="Birth date")
-    endereco: Optional[str] = Field(None, description="Address")
-    estado_civil: Optional[str] = Field(None, description="Marital status")
+    """Schema para informações pessoais do candidato."""
+    data_nascimento: Optional[str] = Field(None, description="Data de nascimento")
+    endereco: Optional[str] = Field(None, description="Endereço")
+    estado_civil: Optional[str] = Field(None, description="Estado civil")
 
 
 class InformacoesProfissionais(BaseModel):
-    """Schema for professional information."""
-    area_atuacao: Optional[str] = Field(None, description="Area of expertise")
-    conhecimentos_tecnicos: Optional[str] = Field(None, description="Technical knowledge")
-    remuneracao: Optional[str] = Field(None, description="Salary expectation")
+    """Schema para informações profissionais do candidato."""
+    area_atuacao: Optional[str] = Field(None, description="Área de atuação")
+    conhecimentos_tecnicos: Optional[str] = Field(None, description="Conhecimentos técnicos")
+    remuneracao: Optional[str] = Field(None, description="Remuneração esperada")
 
 
 class FormacaoIdiomas(BaseModel):
-    """Schema for education and languages."""
-    nivel_academico: Optional[str] = Field(None, description="Academic level")
-    nivel_ingles: Optional[str] = Field(None, description="English level")
-    nivel_espanhol: Optional[str] = Field(None, description="Spanish level")
+    """Schema para formação e idiomas do candidato."""
+    nivel_academico: Optional[str] = Field(None, description="Nível acadêmico")
+    nivel_ingles: Optional[str] = Field(None, description="Nível de inglês")
+    nivel_espanhol: Optional[str] = Field(None, description="Nível de espanhol")
 
 
 class CandidateRawData(BaseModel):
-    """Schema for raw candidate data from JSON."""
-    infos_basicas: Optional[InfosBasicas] = Field(None, description="Basic information")
-    informacoes_pessoais: Optional[InformacoesPessoais] = Field(None, description="Personal information")
-    informacoes_profissionais: Optional[InformacoesProfissionais] = Field(None, description="Professional information")
-    formacao_e_idiomas: Optional[FormacaoIdiomas] = Field(None, description="Education and languages")
-    cargo_atual: Optional[Dict[str, Any]] = Field(None, description="Current position")
-    cv_pt: Optional[str] = Field(None, description="CV in Portuguese")
+    """Schema para dados brutos do candidato em JSON."""
+    infos_basicas: Optional[InfosBasicas] = Field(None, description="Informações básicas")
+    informacoes_pessoais: Optional[InformacoesPessoais] = Field(None, description="Informações pessoais")
+    informacoes_profissionais: Optional[InformacoesProfissionais] = Field(None, description="Informações profissionais")
+    formacao_e_idiomas: Optional[FormacaoIdiomas] = Field(None, description="Formação e idiomas")
+    cargo_atual: Optional[Dict[str, Any]] = Field(None, description="Cargo atual")
+    cv_pt: Optional[str] = Field(None, description="Currículo em português")
 
 
 class JobInfosBasicas(BaseModel):
-    """Schema for basic job information."""
-    titulo_vaga: Optional[str] = Field(None, description="Job title")
-    vaga_sap: Optional[str] = Field(None, description="SAP position flag")
+    """Schema para informações básicas da vaga."""
+    titulo_vaga: Optional[str] = Field(None, description="Título da vaga")
+    vaga_sap: Optional[str] = Field(None, description="Flag de posição SAP")
 
 
 class PerfilVaga(BaseModel):
-    """Schema for job profile requirements."""
-    nivel_academico: Optional[str] = Field(None, description="Required academic level")
-    nivel_ingles: Optional[str] = Field(None, description="Required English level")
-    nivel_espanhol: Optional[str] = Field(None, description="Required Spanish level")
-    areas_atuacao: Optional[str] = Field(None, description="Areas of expertise")
-    principais_atividades: Optional[str] = Field(None, description="Main activities")
-    competencia_tecnicas_e_comportamentais: Optional[str] = Field(None, description="Technical and behavioral competencies")
-    cidade: Optional[str] = Field(None, description="City")
+    """Schema para perfil da vaga."""
+    nivel_academico: Optional[str] = Field(None, description="Nível acadêmico")
+    nivel_ingles: Optional[str] = Field(None, description="Nível de inglês")
+    nivel_espanhol: Optional[str] = Field(None, description="Nível de espanhol")
+    areas_atuacao: Optional[str] = Field(None, description="Áreas de atuação")
+    principais_atividades: Optional[str] = Field(None, description="Principais atividades")
+    competencia_tecnicas_e_comportamentais: Optional[str] = Field(None, description="Competências técnicas e comportamentais")  
+    cidade: Optional[str] = Field(None, description="Cidade")
 
 
 class JobRawData(BaseModel):
-    """Schema for raw job data from JSON."""
-    informacoes_basicas: Optional[JobInfosBasicas] = Field(None, description="Basic job information")
-    perfil_vaga: Optional[PerfilVaga] = Field(None, description="Job profile")
-    beneficios: Optional[Dict[str, Any]] = Field(None, description="Benefits")
+    """Schema para dados brutos da vaga em JSON."""
+    informacoes_basicas: Optional[JobInfosBasicas] = Field(None, description="Informações básicas da vaga")
+    perfil_vaga: Optional[PerfilVaga] = Field(None, description="Perfil da vaga")
+    beneficios: Optional[Dict[str, Any]] = Field(None, description="Benefícios")
 
 
 class ProspectCandidate(BaseModel):
-    """Schema for prospect candidate information."""
-    nome: Optional[str] = Field(None, description="Candidate name")
-    codigo: Optional[str] = Field(None, description="Candidate code")
-    situacao: Optional[str] = Field(None, description="Current status")
-    data_inicio: Optional[str] = Field(None, description="Start date")
-    data_fim: Optional[str] = Field(None, description="End date")
-    comentarios: Optional[str] = Field(None, description="Comments")
+    """Schema para informações do candidato prospect."""
+    nome: Optional[str] = Field(None, description="Nome do candidato")
+    codigo: Optional[str] = Field(None, description="Código do candidato")
+    situacao: Optional[str] = Field(None, description="Situação do candidato")
+    data_inicio: Optional[str] = Field(None, description="Data de início")
+    data_fim: Optional[str] = Field(None, description="Data de fim")
+    comentarios: Optional[str] = Field(None, description="Comentários")
 
 
 class ProspectRawData(BaseModel):
-    """Schema for raw prospect data from JSON."""
-    titulo: Optional[str] = Field(None, description="Position title")
-    modalidade: Optional[str] = Field(None, description="Work modality")
-    prospects: Optional[List[ProspectCandidate]] = Field(None, description="List of prospect candidates")
+    """Schema para dados brutos do prospect em JSON."""
+    titulo: Optional[str] = Field(None, description="Título da vaga")
+    modalidade: Optional[str] = Field(None, description="Modalidade de trabalho")
+    prospects: Optional[List[ProspectCandidate]] = Field(None, description="Lista de candidatos prospect")
 
 
 class ProcessedCandidate(BaseModel):
-    """Schema for processed candidate data."""
-    name: str = Field(..., description="Candidate name")
-    email: Optional[str] = Field(None, description="Email address")
-    phone: Optional[str] = Field(None, description="Phone number")
-    age: int = Field(..., description="Age")
-    education_level: str = Field(..., description="Education level")
-    years_experience: int = Field(..., description="Years of experience")
-    english_level: str = Field(..., description="English proficiency")
-    spanish_level: str = Field(..., description="Spanish proficiency")
-    technical_skills: str = Field(..., description="Technical skills")
-    area_of_expertise: str = Field(..., description="Area of expertise")
-    salary_expectation: float = Field(..., description="Salary expectation")
-    location: str = Field(..., description="Location")
-    remote_work_preference: str = Field(..., description="Remote work preference")
+    """Schema para dados processados do candidato."""
+    name: str = Field(..., description="Nome do candidato")
+    email: Optional[str] = Field(None, description="Email do candidato")
+    phone: Optional[str] = Field(None, description="Telefone do candidato")
+    age: int = Field(..., description="Idade do candidato")
+    education_level: str = Field(..., description="Nível de educação")
+    years_experience: int = Field(..., description="Anos de experiência")
+    english_level: str = Field(..., description="Nível de inglês")
+    spanish_level: str = Field(..., description="Nível de espanhol")
+    technical_skills: str = Field(..., description="Habilidades técnicas")
+    area_of_expertise: str = Field(..., description="Área de especialização")
+    salary_expectation: float = Field(..., description="Expectativa salarial")
+    location: str = Field(..., description="Localização")
+    remote_work_preference: str = Field(..., description="Preferência de trabalho remoto")
 
 
 class ProcessedJob(BaseModel):
-    """Schema for processed job data."""
-    job_title: str = Field(..., description="Job title")
-    required_education: str = Field(..., description="Required education")
-    required_experience: int = Field(..., description="Required years of experience")
-    required_english: str = Field(..., description="Required English level")
-    required_spanish: str = Field(..., description="Required Spanish level")
-    required_skills: str = Field(..., description="Required skills")
-    job_area: str = Field(..., description="Job area")
-    salary_range_min: float = Field(..., description="Minimum salary")
-    salary_range_max: float = Field(..., description="Maximum salary")
-    job_location: str = Field(..., description="Job location")
-    remote_work_allowed: str = Field(..., description="Remote work policy")
-    is_sap_position: bool = Field(..., description="Is SAP position")
+    """Schema para dados processados da vaga."""
+    job_title: str = Field(..., description="Título da vaga")
+    required_education: str = Field(..., description="Nível de educação necessário")
+    required_experience: int = Field(..., description="Anos de experiência necessário")
+    required_english: str = Field(..., description="Nível de inglês necessário")
+    required_spanish: str = Field(..., description="Nível de espanhol necessário")
+    required_skills: str = Field(..., description="Habilidades necessárias")
+    job_area: str = Field(..., description="Área de atuação")
+    salary_range_min: float = Field(..., description="Mínimo salário")
+    salary_range_max: float = Field(..., description="Máximo salário")
+    job_location: str = Field(..., description="Loclização do trabalho")
+    remote_work_allowed: str = Field(..., description="Política de trabalho remoto")
+    is_sap_position: bool = Field(..., description="É posição SAP")

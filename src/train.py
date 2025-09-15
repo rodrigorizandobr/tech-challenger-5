@@ -1,4 +1,4 @@
-"""Model training pipeline with sklearn and persistence."""
+"""Pipeline de treinamento de modelo com sklearn e persistência."""
 
 import pandas as pd
 import numpy as np
@@ -31,13 +31,13 @@ from features import (
 
 
 class ModelTrainer:
-    """Model training and evaluation class."""
+    """Classe para treinamento e avaliação de modelos."""
     
     def __init__(self, random_state: int = 42):
-        """Initialize the model trainer.
+        """Inicializa o treinador de modelos.
         
         Args:
-            random_state: Random seed for reproducibility
+            random_state: Seed aleatória para reprodutibilidade
         """
         self.random_state = random_state
         self.models = {}
@@ -50,7 +50,7 @@ class ModelTrainer:
         self._initialize_models()
     
     def _initialize_models(self) -> None:
-        """Initialize candidate models for training."""
+        """Inicializa modelos candidatos para treinamento."""
         logger.info("Inicializando modelos candidatos")
         
         self.models = {
@@ -81,18 +81,18 @@ class ModelTrainer:
             )
         }
         
-        logger.info(f"Initialized {len(self.models)} candidate models")
+        logger.info(f"Inicializados {len(self.models)} modelos candidatos")
     
     def prepare_data(self, data_path: str) -> Tuple[pd.DataFrame, pd.DataFrame]:
-        """Load and prepare training data.
+        """Prepara dados de treinamento.
         
         Args:
-            data_path: Path to the training data
+            data_path: Caminho para os dados de treinamento
             
         Returns:
-            Tuple of (train_df, test_df)
+            Tupla de (train_df, test_df)
         """
-        logger.info(f"Loading data from {data_path}")
+        logger.info(f"Carregando dados de {data_path}")
         
         # Carrega e valida dados
         df = load_and_validate_data(data_path)
@@ -103,18 +103,18 @@ class ModelTrainer:
         # Divide dados
         train_df, test_df = split_data(df_engineered, test_size=0.2, random_state=self.random_state)
         
-        logger.info(f"Data preparation completed. Train: {len(train_df)}, Test: {len(test_df)}")
+        logger.info(f"Preparação de dados concluída. Treinamento: {len(train_df)}, Teste: {len(test_df)}")
         
         return train_df, test_df
     
     def get_feature_target_split(self, df: pd.DataFrame) -> Tuple[pd.DataFrame, pd.Series]:
-        """Split dataframe into features and target.
+        """Divide dataframe em features e target.
         
         Args:
             df: Input dataframe
             
         Returns:
-            Tuple of (features, target)
+            Tupla de (features, target)
         """
         # Define colunas de features para treinamento
         feature_cols = [
@@ -132,12 +132,12 @@ class ModelTrainer:
         
         if len(available_cols) < len(feature_cols):
             missing_cols = set(feature_cols) - set(available_cols)
-            logger.warning(f"Missing feature columns: {missing_cols}")
+            logger.warning(f"Colunas de feature missing: {missing_cols}")
         
         X = df[available_cols]
         y = df['match_label']
         
-        logger.info(f"Using {len(available_cols)} features for training")
+        logger.info(f"Usando {len(available_cols)} features para treinamento")
         
         return X, y
     
@@ -147,24 +147,24 @@ class ModelTrainer:
         model_name: str = 'random_forest',
         use_grid_search: bool = True
     ) -> Pipeline:
-        """Train a specific model.
+        """Treina um modelo específico.
         
         Args:
-            train_df: Training dataframe
-            model_name: Name of the model to train
+            train_df: Dataframe de treinamento
+            model_name: Nome do modelo a ser treinado
             use_grid_search: Whether to use grid search for hyperparameter tuning
             
         Returns:
-            Trained pipeline
+            Pipeline treinado
         """
-        logger.info(f"Training {model_name} model")
+        logger.info(f"Treinando modelo {model_name}")
         
         # Prepara features e target
         X_train, y_train = self.get_feature_target_split(train_df)
         
         # Obtém modelo base
         if model_name not in self.models:
-            raise ValueError(f"Unknown model: {model_name}")
+            raise ValueError(f"Modelo desconhecido: {model_name}")
         
         base_model = self.models[model_name]
         
@@ -186,7 +186,7 @@ class ModelTrainer:
         )
         calibrated_pipeline.fit(X_train, y_train)
         
-        logger.info(f"Model {model_name} training completed")
+        logger.info(f"Treinamento do modelo {model_name} concluído")
         
         return calibrated_pipeline
     
@@ -197,18 +197,18 @@ class ModelTrainer:
         y_train: pd.Series,
         model_name: str
     ) -> Pipeline:
-        """Tune hyperparameters using grid search.
+        """Ajusta hiperparâmetros usando grid search.
         
         Args:
-            pipeline: Base pipeline
-            X_train: Training features
-            y_train: Training target
-            model_name: Name of the model
+            pipeline: Pipeline base
+            X_train: Features de treinamento
+            y_train: Target de treinamento
+            model_name: Nome do modelo
             
         Returns:
-            Pipeline with best parameters
+            Pipeline com melhores parâmetros
         """
-        logger.info(f"Tuning hyperparameters for {model_name}")
+        logger.info(f"Ajustando hiperparâmetros para {model_name}")
         
         # Define grades de parâmetros (otimizadas para velocidade)
         param_grids = {
@@ -237,7 +237,7 @@ class ModelTrainer:
         }
         
         if model_name not in param_grids:
-            logger.warning(f"No parameter grid defined for {model_name}")
+            logger.warning(f"Nenhum grid de parâmetros definido para {model_name}")
             return pipeline
         
         # Executa busca em grade
@@ -254,8 +254,8 @@ class ModelTrainer:
         
         grid_search.fit(X_train, y_train)
         
-        logger.info(f"Best parameters for {model_name}: {grid_search.best_params_}")
-        logger.info(f"Best CV score: {grid_search.best_score_:.4f}")
+        logger.info(f"Hiperparâmetros ótimos para {model_name}: {grid_search.best_params_}")
+        logger.info(f"Melhor pontuação CV: {grid_search.best_score_:.4f}")
         
         return grid_search.best_estimator_
     
@@ -265,24 +265,24 @@ class ModelTrainer:
         test_df: pd.DataFrame,
         model_name: str = "model"
     ) -> Dict[str, Any]:
-        """Evaluate model performance.
+        """Avalia o desempenho do modelo.
         
         Args:
-            model: Trained model pipeline
-            test_df: Test dataframe
-            model_name: Name of the model for logging
+            model: Pipeline do modelo treinado
+            test_df: Dataframe de teste
+            model_name: Nome do modelo para logging
             
         Returns:
-            Dictionary with evaluation metrics
+            Dicionário com métricas de avaliação
         """
-        logger.info(f"Evaluating {model_name} model")
+        logger.info(f"Avaliando desempenho do modelo {model_name}")
         
         # Prepara dados de teste
         X_test, y_test = self.get_feature_target_split(test_df)
         
         # Faz predições
         y_pred = model.predict(X_test)
-        y_pred_proba = model.predict_proba(X_test)[:, 1]  # Probability of positive class
+        y_pred_proba = model.predict_proba(X_test)[:, 1]  # Probabilidade da classe positiva
         
         # Calcula métricas
         metrics = {
@@ -302,10 +302,10 @@ class ModelTrainer:
         metrics['cv_f1_mean'] = cv_scores.mean()
         metrics['cv_f1_std'] = cv_scores.std()
         
-        logger.info(f"Model {model_name} evaluation completed")
+        logger.info(f"Modelo {model_name} avaliado com sucesso")
         logger.info(f"F1 Score: {metrics['f1_score']:.4f}")
         logger.info(f"ROC AUC: {metrics['roc_auc']:.4f}")
-        logger.info(f"Accuracy: {metrics['accuracy']:.4f}")
+        logger.info(f"Acurácia: {metrics['accuracy']:.4f}")
         
         return metrics
     
@@ -314,14 +314,14 @@ class ModelTrainer:
         train_df: pd.DataFrame, 
         test_df: pd.DataFrame
     ) -> Tuple[Pipeline, Dict[str, Any]]:
-        """Train multiple models and select the best one.
+        """Treina múltiplos modelos e seleciona o melhor.
         
         Args:
-            train_df: Training dataframe
-            test_df: Test dataframe
+            train_df: Dataframe de treinamento
+            test_df: Dataframe de teste
             
         Returns:
-            Tuple of (best_model, evaluation_metrics)
+            Tupla de (melhor_modelo, métricas_de_avaliação)
         """
         logger.info("Treinando e selecionando melhor modelo")
         
@@ -332,7 +332,7 @@ class ModelTrainer:
         
         for model_name in self.models.keys():
             try:
-                logger.info(f"Training {model_name}...")
+                logger.info(f"Treinando {model_name}...")
                 
                 # Treina modelo
                 model = self.train_model(train_df, model_name, use_grid_search=True)
@@ -353,14 +353,14 @@ class ModelTrainer:
                     best_model = model
                     best_metrics = metrics
                     
-                    logger.info(f"New best model: {model_name} (F1: {f1_score:.4f})")
+                    logger.info(f"Novo melhor modelo: {model_name} (F1: {f1_score:.4f})")
                 
             except Exception as e:
-                logger.error(f"Error training {model_name}: {e}")
+                logger.error(f"Erro ao treinar {model_name}: {e}")
                 continue
         
         if best_model is None:
-            raise RuntimeError("No models were successfully trained")
+            raise RuntimeError("Nenhum modelo foi treinado com sucesso")
         
         # Armazena metadados de treinamento
         self.training_metadata = {
@@ -376,24 +376,24 @@ class ModelTrainer:
         self.best_model = best_model
         self.best_score = best_score
         
-        logger.info(f"Best model selected with F1 score: {best_score:.4f}")
+        logger.info(f"Melhor modelo selecionado com F1 score: {best_score:.4f}")
         
         return best_model, best_metrics
     
     def save_model(self, model: Pipeline, model_path: str, metadata_path: str = None) -> None:
-        """Save trained model and metadata.
+        """Salva o modelo treinado e seus metadados.
         
         Args:
-            model: Trained model pipeline
-            model_path: Path to save the model
-            metadata_path: Path to save metadata (optional)
+            model: Pipeline do modelo treinado
+            model_path: Caminho para salvar o modelo
+            metadata_path: Caminho para salvar metadados (opcional)
         """
         model_path = Path(model_path)
         model_path.parent.mkdir(parents=True, exist_ok=True)
         
         # Salva modelo
         joblib.dump(model, model_path)
-        logger.info(f"Model saved to {model_path}")
+        logger.info(f"Modelo salvo em {model_path}")
         
         # Salva metadados
         if metadata_path:
@@ -403,19 +403,19 @@ class ModelTrainer:
             with open(metadata_path, 'w') as f:
                 json.dump(self.training_metadata, f, indent=2, default=str)
             
-            logger.info(f"Metadata saved to {metadata_path}")
+            logger.info(f"Metadados salvos em {metadata_path}")
     
     def load_model(self, model_path: str) -> Pipeline:
-        """Load trained model from disk.
+        """Carrega o modelo treinado de disco.
         
         Args:
-            model_path: Path to the saved model
+            model_path: Caminho para o modelo salvo
             
         Returns:
-            Loaded model pipeline
+            Pipeline do modelo carregado
         """
         model = joblib.load(model_path)
-        logger.info(f"Model loaded from {model_path}")
+        logger.info(f"Modelo carregado de {model_path}")
         return model
 
 
@@ -425,13 +425,13 @@ def main(
     metadata_path: str = "models/training_metadata.json",
     random_state: int = 42
 ) -> None:
-    """Main training function.
+    """Função principal de treinamento do modelo.
     
     Args:
-        data_path: Path to training data
-        model_path: Path to save the trained model
-        metadata_path: Path to save training metadata
-        random_state: Random seed
+        data_path: Caminho para os dados de treinamento
+        model_path: Caminho para salvar o modelo treinado
+        metadata_path: Caminho para salvar metadados de treinamento
+        random_state: Seed aleatória para reprodutibilidade
     """
     logger.info("Iniciando pipeline de treinamento do modelo")
     
@@ -450,7 +450,7 @@ def main(
         
         # Imprime resultados finais
         logger.info("Treinamento concluído com sucesso!")
-        logger.info(f"Final model metrics:")
+        logger.info(f"Métricas do modelo final:")
         for metric, value in metrics.items():
             if isinstance(value, (int, float)):
                 logger.info(f"  {metric}: {value:.4f}")
@@ -458,34 +458,34 @@ def main(
         return best_model, metrics
         
     except Exception as e:
-        logger.error(f"Training failed: {e}")
+        logger.error(f"Treinamento falhou: {e}")
         raise
 
 
 if __name__ == "__main__":
     import argparse
     
-    parser = argparse.ArgumentParser(description="Train recruitment AI model")
+    parser = argparse.ArgumentParser(description="Treine um modelo de IA para recrutamento")
     parser.add_argument(
         "--data-path", 
         default="data/sample_candidates.csv",
-        help="Path to training data"
+        help="Caminho para os dados de treinamento"
     )
     parser.add_argument(
         "--model-path", 
         default="models/model.joblib",
-        help="Path to save trained model"
+        help="Caminho para salvar o modelo treinado"
     )
     parser.add_argument(
         "--metadata-path", 
         default="models/training_metadata.json",
-        help="Path to save training metadata"
+        help="Caminho para salvar metadados de treinamento"
     )
     parser.add_argument(
         "--random-state", 
         type=int, 
         default=42,
-        help="Random seed for reproducibility"
+        help="Seed aleatória para reprodutibilidade"
     )
     
     args = parser.parse_args()

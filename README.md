@@ -1,4 +1,4 @@
-# Decision AI - Recruitment System
+# Decision AI - Sistema de Recrutamento
 
 [![Tests](https://img.shields.io/badge/tests-passing-brightgreen)]()
 [![Python](https://img.shields.io/badge/python-3.11-blue)]()
@@ -36,20 +36,20 @@ O Decision AI é uma solução completa de machine learning para automatizar o p
 - **Monitoramento**: Detecção de drift de dados com Evidently AI
 - **Containerização**: Deploy com Docker e Docker Compose
 - **Testes Automatizados**: Cobertura completa com pytest
-- **Fallback Inteligente**: Geração automática de dados sintéticos quando dados reais não disponíveis
+- **Fallback Inteligente**: Geração automática de dados sintéticos quando dados reais não estão disponíveis
 - **Multilíngue**: Sistema com logs e comentários em português brasileiro
 
 ## ✨ Funcionalidades
 
-### Core Features
+### Funcionalidades Principais
 
-- ✅ **Predição de Match**: Calcula probabilidade de compatibilidade candidato-vaga baseada em dados reais
-- ✅ **Análise de Fatores**: Identifica quais aspectos influenciam o match (skills, experiência, localização, salário)
+- ✅ **Predição de Compatibilidade**: Calcula probabilidade de compatibilidade candidato-vaga baseada em dados reais
+- ✅ **Análise de Fatores**: Identifica quais aspectos influenciam a compatibilidade (habilidades, experiência, localização, salário)
 - ✅ **Recomendações**: Fornece sugestões baseadas na análise de 45k candidatos reais
 - ✅ **Processamento de Dados Reais**: Extração automática de features de applicants.json, prospects.json, jobs.json
 - ✅ **Validação de Dados**: Validação robusta com Pydantic adaptada para estrutura real
-- ✅ **Logging Estruturado**: Logs detalhados em português brasileiro para auditoria
-- ✅ **Fallback Inteligente**: Sistema funciona com dados sintéticos quando dados reais não disponíveis
+- ✅ **Registro Estruturado**: Logs detalhados em português brasileiro para auditoria
+- ✅ **Fallback Inteligente**: Sistema funciona com dados sintéticos quando dados reais não estão disponíveis
 
 ### Monitoramento e Observabilidade
 
@@ -60,26 +60,27 @@ O Decision AI é uma solução completa de machine learning para automatizar o p
 
 ### DevOps e Qualidade
 
-- ✅ **CI/CD Ready**: Configuração para GitHub Actions
-- ✅ **Containerização**: Docker multi-stage para produção
+- ✅ **Pronto para CI/CD**: Configuração para GitHub Actions
+- ✅ **Containerização**: Docker multi-estágio para produção
 - ✅ **Testes**: Cobertura completa com pytest
-- ✅ **Linting**: Black e Ruff para qualidade de código
-- ✅ **Type Hints**: Tipagem estática completa
+- ✅ **Análise de Código**: Black e Ruff para qualidade de código
+- ✅ **Tipagem Estática**: Tipagem estática completa
 
 ## 🏗️ Arquitetura
 
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Frontend/     │    │   FastAPI       │    │   ML Pipeline   │
-│   Postman       │───▶│   Application   │───▶│   (sklearn)     │
+│   Frontend/     │    │   Aplicação     │    │   Pipeline ML   │
+│   Postman       │───▶│   FastAPI       │───▶│   (sklearn)     │
 │                 │    │                 │    │                 │
 └─────────────────┘    └─────────────────┘    └─────────────────┘
                                 │                        │
                                 ▼                        ▼
                        ┌─────────────────┐    ┌─────────────────┐
-                       │   Monitoring    │    │   Data Storage  │
-                       │   (Evidently)   │    │   (CSV/Joblib)  │
-                       └─────────────────┘    └─────────────────┘
+                       │   Monitoramento │    │ Armazenamento   │
+                       │   (Evidently)   │    │   de Dados      │
+                       └─────────────────┘    │   (CSV/Joblib)  │
+                                              └─────────────────┘
 ```
 
 ### Stack Tecnológica
@@ -203,7 +204,7 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 python quick_train.py
 ```
 
-### Opção 3: Docker
+### Opção 4: Docker
 
 ```bash
 # Build e execução
@@ -219,7 +220,7 @@ Após a execução, a API estará disponível em:
 - **Documentação**: http://localhost:8000/docs
 - **Health Check**: http://localhost:8000/health
 
-## 📡 API Endpoints
+## 📡 Endpoints da API
 
 ### Principais Endpoints
 
@@ -276,7 +277,7 @@ curl -X POST "http://localhost:8000/predict" \
     "salary_fit": 0.85,
     "location_compatibility": 1.0
   },
-  "recommendation": "Excellent match - strongly recommend for interview",
+  "recommendation": "Excelente compatibilidade - fortemente recomendado para entrevista",
   "timestamp": "2024-01-15T10:30:00"
 }
 ```
@@ -543,5 +544,8 @@ test(api): add integration tests for health endpoint
 ## 📄 Licença
 
 Este projeto está licenciado sob a MIT License - veja o arquivo [LICENSE](LICENSE) para detalhes.
-Desenvolvido pra o curso MLE Turma 4 - FIAP
-Alunos: Rodrigo Matheus da Silva (rodrigorizando@gmail.com) e Vitor Efigênio Neto (vitorefigenio@gmail.com)
+Desenvolvido para o curso MLE Turma 4 - FIAP
+
+---
+
+**Estudantes**: Rodrigo Matheus da Silva (rodrigorizando@gmail.com) e Vitor Efigênio Neto (vitorefigenio@gmail.com)

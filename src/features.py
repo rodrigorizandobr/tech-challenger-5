@@ -1,4 +1,4 @@
-"""Feature engineering and preprocessing module."""
+"""Módulo de engenharia de features e pré-processamento."""
 
 import pandas as pd
 import numpy as np
@@ -14,18 +14,18 @@ from pathlib import Path
 
 
 class SkillsMatchTransformer(BaseEstimator, TransformerMixin):
-    """Custom transformer for skills matching features."""
+    """Transformador personalizado para features de correspondência de habilidades."""
     
     def __init__(self):
         self.skill_vocabulary_ = set()
         self.fitted_ = False
     
     def fit(self, X, y=None):
-        """Fit the transformer by building skill vocabulary.
+        """Ajusta o transformador construindo o vocabulário de habilidades.
         
         Args:
-            X: DataFrame with candidate_skills and required_skills columns
-            y: Target variable (ignored)
+            X: DataFrame com colunas candidate_skills e required_skills
+            y: Variável alvo (ignorado)
             
         Returns:
             self
@@ -55,16 +55,16 @@ class SkillsMatchTransformer(BaseEstimator, TransformerMixin):
         return self
     
     def transform(self, X):
-        """Transform the data by creating skill-based features.
+        """Transforma os dados criando features baseadas em habilidades.
         
         Args:
-            X: DataFrame with skills columns
+            X: DataFrame com colunas de habilidades
             
         Returns:
-            Transformed DataFrame with additional skill features
+            DataFrame transformado com features adicionais de habilidades
         """
         if not self.fitted_:
-            raise ValueError("Transformer must be fitted before transform")
+            raise ValueError("Transformer deve ser ajustado antes da transformação")
         
         X_transformed = X.copy()
         
@@ -93,7 +93,7 @@ class SkillsMatchTransformer(BaseEstimator, TransformerMixin):
         return X_transformed
     
     def _calculate_skills_match_ratio(self, row) -> float:
-        """Calculate the ratio of matching skills."""
+        """Calcula a proporção de habilidades correspondentes."""
         try:
             candidate_skills = self._parse_skills(row.get('candidate_skills', ''))
             required_skills = self._parse_skills(row.get('required_skills', ''))
@@ -107,7 +107,7 @@ class SkillsMatchTransformer(BaseEstimator, TransformerMixin):
             return 0.0
     
     def _calculate_skills_count(self, row) -> int:
-        """Calculate the number of candidate skills."""
+        """Calcula o número de habilidades do candidato."""
         try:
             candidate_skills = self._parse_skills(row.get('candidate_skills', ''))
             return len(candidate_skills)
@@ -115,7 +115,7 @@ class SkillsMatchTransformer(BaseEstimator, TransformerMixin):
             return 0
     
     def _calculate_skill_diversity(self, row) -> float:
-        """Calculate skill diversity score based on vocabulary coverage."""
+        """Calcula o score de diversidade de habilidades baseado na cobertura do vocabulário."""
         try:
             candidate_skills = self._parse_skills(row.get('candidate_skills', ''))
             if not self.skill_vocabulary_ or not candidate_skills:
@@ -127,7 +127,7 @@ class SkillsMatchTransformer(BaseEstimator, TransformerMixin):
             return 0.0
     
     def _calculate_rare_skills_bonus(self, row) -> float:
-        """Calculate bonus for having rare/specialized skills."""
+        """Calcula bônus para ter habilidades raras/especializadas."""
         try:
             candidate_skills = self._parse_skills(row.get('candidate_skills', ''))
             required_skills = self._parse_skills(row.get('required_skills', ''))
@@ -141,7 +141,7 @@ class SkillsMatchTransformer(BaseEstimator, TransformerMixin):
             return 0.0
     
     def _parse_skills(self, skills_str: str) -> List[str]:
-        """Parse skills string into list of skills."""
+        """Converte string de habilidades em lista de habilidades."""
         if not isinstance(skills_str, str) or not skills_str.strip():
             return []
         
@@ -149,14 +149,14 @@ class SkillsMatchTransformer(BaseEstimator, TransformerMixin):
 
 
 class SalaryFitTransformer(BaseEstimator, TransformerMixin):
-    """Custom transformer for salary fit features."""
+    """Transformador personalizado para features de adequação salarial."""
     
     def fit(self, X, y=None):
-        """Fit the transformer (no-op for this transformer)."""
+        """Ajusta o transformador (não faz nada para este transformador)."""
         return self
     
     def transform(self, X):
-        """Transform salary data into fit features."""
+        """Transforma os dados de salário em features de adequação."""
         X_transformed = X.copy()
         
         # Calcula adequação salarial se não estiver presente
@@ -196,7 +196,7 @@ class SalaryFitTransformer(BaseEstimator, TransformerMixin):
             return 0.5
     
     def _calculate_salary_position(self, row) -> float:
-        """Calculate position of expectation within salary range (0-1)."""
+        """Calcula a posição da expectativa salarial dentro do intervalo (0-1)."""
         try:
             salary_exp = row.get('salary_expectation', 0)
             salary_min = row.get('salary_range_min', 0)
@@ -211,7 +211,7 @@ class SalaryFitTransformer(BaseEstimator, TransformerMixin):
             return 0.5
     
     def _calculate_salary_ratio(self, row) -> float:
-        """Calculate ratio of expectation to range midpoint."""
+        """Calcula a proporção da expectativa salarial em relação ao ponto médio do intervalo."""
         try:
             salary_exp = row.get('salary_expectation', 0)
             salary_min = row.get('salary_range_min', 0)
@@ -227,14 +227,14 @@ class SalaryFitTransformer(BaseEstimator, TransformerMixin):
 
 
 class LocationCompatibilityTransformer(BaseEstimator, TransformerMixin):
-    """Custom transformer for location compatibility features."""
+    """Transformador personalizado para features de compatibilidade de localização."""
     
     def fit(self, X, y=None):
-        """Fit the transformer (no-op for this transformer)."""
+        """Ajusta o transformador (não faz nada para este transformador)."""
         return self
     
     def transform(self, X):
-        """Transform location data into compatibility features."""
+        """Transforma os dados de localização em features de compatibilidade."""
         X_transformed = X.copy()
         
         # Calcula match de localização se não estiver presente
@@ -252,7 +252,7 @@ class LocationCompatibilityTransformer(BaseEstimator, TransformerMixin):
         return X_transformed
     
     def _calculate_location_match(self, row) -> float:
-        """Calculate location compatibility score."""
+        """Calcula o score de compatibilidade de localização."""
         try:
             candidate_location = str(row.get('candidate_location', '')).strip().lower()
             job_location = str(row.get('job_location', '')).strip().lower()
@@ -267,7 +267,7 @@ class LocationCompatibilityTransformer(BaseEstimator, TransformerMixin):
             if job_location == 'remote' or (remote_work and remote_allowed):
                 return 1.0
             
-            # Same state/region (simplified)
+            # Mesmo estado/região (simples)
             major_cities = {
                 'são paulo': 'sp',
                 'rio de janeiro': 'rj',
@@ -293,7 +293,7 @@ class LocationCompatibilityTransformer(BaseEstimator, TransformerMixin):
             return 0.5
     
     def _calculate_remote_compatibility(self, row) -> float:
-        """Calculate remote work compatibility."""
+        """Calcula a compatibilidade de trabalho remoto."""
         try:
             remote_work = row.get('remote_work', False)
             remote_allowed = row.get('remote_allowed', False)
@@ -301,20 +301,20 @@ class LocationCompatibilityTransformer(BaseEstimator, TransformerMixin):
             if remote_work and remote_allowed:
                 return 1.0
             elif remote_allowed:
-                return 0.8  # Job allows remote, candidate may adapt
+                return 0.8  # O trabalho remoto é permitido, o candidato pode se adaptar
             elif remote_work:
-                return 0.3  # Candidate wants remote, job doesn't allow
+                return 0.3  # O candidato deseja trabalho remoto, o trabalho não permite
             else:
-                return 0.6  # Both prefer in-person
+                return 0.6  # Ambos preferem trabalho presencial
         except Exception:
             return 0.5
 
 
 def create_preprocessing_pipeline() -> ColumnTransformer:
-    """Create the complete preprocessing pipeline.
+    """Cria o pipeline de pré-processamento completo.
     
     Returns:
-        Configured ColumnTransformer pipeline
+        Pipeline de pré-processamento configurado
     """
     logger.info("Criando pipeline de pré-processamento")
     
@@ -358,22 +358,22 @@ def create_preprocessing_pipeline() -> ColumnTransformer:
             ('cat', categorical_pipeline, categorical_features),
             ('bool', boolean_pipeline, boolean_features)
         ],
-        remainder='passthrough',  # Keep other columns as-is
+        remainder='passthrough',  # Mantém outras colunas como estão
         verbose_feature_names_out=False
     )
     
-    logger.info(f"Pipeline created with {len(numeric_features)} numeric, "
-                f"{len(categorical_features)} categorical, and "
-                f"{len(boolean_features)} boolean features")
+    logger.info(f"Pipeline criado com {len(numeric_features)} numéricas, "
+                f"{len(categorical_features)} categóricas, e "
+                f"{len(boolean_features)} booleanas")
     
     return preprocessor
 
 
 def create_feature_engineering_pipeline() -> Pipeline:
-    """Create the complete feature engineering pipeline.
+    """Cria o pipeline de engenharia de features completo.
     
     Returns:
-        Complete feature engineering pipeline
+        Pipeline de engenharia de features completo
     """
     logger.info("Criando pipeline de engenharia de features")
     
@@ -389,15 +389,15 @@ def create_feature_engineering_pipeline() -> Pipeline:
 
 
 def engineer_features(df: pd.DataFrame) -> pd.DataFrame:
-    """Apply feature engineering to the dataset.
+    """Engenharia de features no dataset.
     
     Args:
         df: Input DataFrame
         
     Returns:
-        DataFrame with engineered features
+        DataFrame com features
     """
-    logger.info(f"Engineering features for dataset with shape {df.shape}")
+    logger.info(f"Engenharia de features no dataset com shape {df.shape}")
     
     df_engineered = df.copy()
     
@@ -435,19 +435,19 @@ def engineer_features(df: pd.DataFrame) -> pd.DataFrame:
         0
     )
     
-    logger.info(f"Feature engineering completed. New shape: {df_engineered.shape}")
+    logger.info(f"Engenharia de features concluída. Novo shape: {df_engineered.shape}")
     
     return df_engineered
 
 
 def get_feature_names(preprocessor: ColumnTransformer) -> List[str]:
-    """Get feature names from fitted preprocessor.
+    """Obtém nomes de features de um pré-processador ajustado.
     
     Args:
-        preprocessor: Fitted ColumnTransformer
+        preprocessor: Pré-processador ajustado
         
     Returns:
-        List of feature names
+        Lista de nomes de features
     """
     try:
         return preprocessor.get_feature_names_out()
@@ -472,30 +472,30 @@ def get_feature_names(preprocessor: ColumnTransformer) -> List[str]:
 
 
 def save_preprocessor(preprocessor: ColumnTransformer, filepath: str) -> None:
-    """Save fitted preprocessor to disk.
+    """Salva um pré-processador ajustado em disco.
     
     Args:
-        preprocessor: Fitted preprocessor
-        filepath: Path to save the preprocessor
+        preprocessor: Pré-processador ajustado
+        filepath: Caminho para salvar o pré-processador
     """
     filepath = Path(filepath)
     filepath.parent.mkdir(parents=True, exist_ok=True)
     
     joblib.dump(preprocessor, filepath)
-    logger.info(f"Preprocessor saved to {filepath}")
+    logger.info(f"Pré-processador salvo em {filepath}")
 
 
 def load_preprocessor(filepath: str) -> ColumnTransformer:
-    """Load preprocessor from disk.
+    """Carrega um pré-processador de disco.
     
     Args:
-        filepath: Path to the saved preprocessor
+        filepath: Caminho para o pré-processador salvo
         
     Returns:
-        Loaded preprocessor
+        Pré-processador carregado
     """
     preprocessor = joblib.load(filepath)
-    logger.info(f"Preprocessor loaded from {filepath}")
+    logger.info(f"Pré-processador carregado de {filepath}")
     return preprocessor
 
 
@@ -509,24 +509,24 @@ if __name__ == "__main__":
     df = load_real_data()
     
     if df.empty:
-        print("No real data available for testing")
+        print("Nenhum dado real disponível para teste")
         sys.exit(1)
     
-    print(f"Loaded {len(df)} samples for feature engineering test")
+    print(f"{len(df)} amostras carregadas para teste de engenharia de features")
     
     # Apply feature engineering
     df_engineered = engineer_features(df)
     
-    print(f"Original shape: {df.shape}")
-    print(f"Engineered shape: {df_engineered.shape}")
-    print(f"New columns: {set(df_engineered.columns) - set(df.columns)}")
+    print(f"Forma original: {df.shape}")
+    print(f"Forma após engenharia de features: {df_engineered.shape}")
+    print(f"Novoas colunas: {set(df_engineered.columns) - set(df.columns)}")
     
     # Show sample of engineered features
-    print("\nSample of engineered features:")
+    print("\nAmostra de features:")
     feature_cols = ['skills_match_ratio', 'skill_diversity', 'rare_skills_bonus', 
                    'salary_fit', 'salary_position', 'location_match']
     available_cols = [col for col in feature_cols if col in df_engineered.columns]
     if available_cols:
         print(df_engineered[available_cols].head())
     
-    print("\nFeature engineering test completed successfully!")
+    print("\nTeste de engenharia de features concluído com sucesso!")

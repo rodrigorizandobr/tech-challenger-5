@@ -13,10 +13,10 @@ from datetime import datetime
 
 
 def load_real_data() -> pd.DataFrame:
-    """Load and process real recruitment data from JSON files.
+    """Carrega e processa dados reais de recrutamento de arquivos JSON.
     
     Returns:
-        DataFrame with processed recruitment data
+        DataFrame com dados de recrutamento processados
     """
     logger.info("Carregando dados reais de recrutamento...")
     
@@ -25,7 +25,7 @@ def load_real_data() -> pd.DataFrame:
     project_root = current_dir.parent
     data_dir = project_root / "data"
     
-    logger.info(f"Looking for data files in: {data_dir}")
+    logger.info(f"Procurando arquivos de dados em: {data_dir}")
     
     try:
         # Verifica se os arquivos existem
@@ -34,15 +34,15 @@ def load_real_data() -> pd.DataFrame:
         prospects_file = data_dir / "prospects.json"
         
         if not applicants_file.exists():
-            logger.warning(f"applicants.json not found at {applicants_file}")
+            logger.warning(f"applicants.json não encontrado em {applicants_file}")
             return generate_synthetic_data()
             
         if not jobs_file.exists():
-            logger.warning(f"jobs.json not found at {jobs_file}")
+            logger.warning(f"jobs.json não encontrado em {jobs_file}")
             return generate_synthetic_data()
             
         if not prospects_file.exists():
-            logger.warning(f"prospects.json not found at {prospects_file}")
+            logger.warning(f"prospects.json não encontrado em {prospects_file}")
             return generate_synthetic_data()
         
         logger.info("Carregando applicants.json...")
@@ -98,25 +98,25 @@ def load_real_data() -> pd.DataFrame:
             data.append(sample)
     
     df = pd.DataFrame(data)
-    logger.info(f"Loaded dataset shape: {df.shape}")
+    logger.info(f"Formato do dataset carregado: {df.shape}")
     if not df.empty:
-        logger.info(f"Match distribution: {df['match_label'].value_counts().to_dict()}")
+        logger.info(f"Distribuição de matches: {df['match_label'].value_counts().to_dict()}")
     
     return df
 
 
 def generate_synthetic_data(n_samples: int = 1000, seed: int = 42) -> pd.DataFrame:
-    """Generate synthetic candidate-job match data.
+    """Gera dados sintéticos de correspondência candidato-vaga.
     
     Args:
-        n_samples: Number of samples to generate
-        seed: Random seed for reproducibility
+        n_samples: Número de amostras a serem geradas
+        seed: Semente aleatória para reprodutibilidade
         
     Returns:
-        DataFrame with synthetic data
+        DataFrame com dados sintéticos
     """
     np.random.seed(seed)
-    logger.info(f"Generating {n_samples} synthetic samples with seed {seed}")
+    logger.info(f"Gerando {n_samples} amostras sintéticas com semente {seed}")
     
     # Define categorias de habilidades
     tech_skills = [
@@ -272,14 +272,14 @@ def generate_synthetic_data(n_samples: int = 1000, seed: int = 42) -> pd.DataFra
         })
     
     df = pd.DataFrame(data)
-    logger.info(f"Generated dataset with shape {df.shape}")
-    logger.info(f"Match distribution: {df['match_label'].value_counts().to_dict()}")
+    logger.info(f"Dataset gerado com formato {df.shape}")
+    logger.info(f"Distribuição de matches: {df['match_label'].value_counts().to_dict()}")
     
     return df
 
 
 def extract_experience_from_cv(cv_text: str) -> int:
-    """Extract years of experience from CV text."""
+    """Extrai anos de experiência."""
     if not cv_text:
         return 1
     
@@ -303,7 +303,7 @@ def extract_experience_from_cv(cv_text: str) -> int:
 
 
 def extract_skills_from_text(text: str) -> str:
-    """Extract technical skills from text."""
+    """Extrai skill técnica."""
     if not text:
         return ''
     
@@ -329,7 +329,7 @@ def extract_skills_from_text(text: str) -> str:
 
 
 def normalize_education_level(education: str) -> str:
-    """Normalize education level to standard format."""
+    """Normaliza o nível de educação para formato padrão."""
     if not education:
         return 'Ensino Superior'
     
@@ -350,7 +350,7 @@ def normalize_education_level(education: str) -> str:
 
 
 def normalize_language_level(level: str) -> str:
-    """Normalize language level to standard format."""
+    """Normaliza o nível de idioma para formato padrão."""
     if not level:
         return 'Básico'
     
@@ -369,7 +369,7 @@ def normalize_language_level(level: str) -> str:
 
 
 def normalize_area(area: str) -> str:
-    """Normalize area of expertise to standard format."""
+    """Normaliza a área de especialização para formato padrão."""
     if not area:
         return 'Tecnologia'
     
@@ -390,7 +390,7 @@ def normalize_area(area: str) -> str:
 
 
 def extract_salary(salary_text: str) -> float:
-    """Extract salary expectation from text."""
+    """Extrai salário]"""
     if not salary_text:
         return 8000.0
     
@@ -407,7 +407,7 @@ def extract_salary(salary_text: str) -> float:
 
 
 def extract_location(address: str) -> str:
-    """Extract location from address."""
+    """Extrai endereço."""
     if not address:
         return 'São Paulo'
     
@@ -423,7 +423,7 @@ def extract_location(address: str) -> str:
 
 
 def extract_required_experience(job_description: str) -> int:
-    """Extract required years of experience from job description."""
+    """Extrai os anos de experiência necessários da descrição da vaga."""
     if not job_description:
         return 3
     
@@ -451,13 +451,13 @@ def extract_required_experience(job_description: str) -> int:
 
 
 def extract_candidate_features(candidate_data: Dict) -> Dict:
-    """Extract relevant features from candidate data.
+    """Extrai características relevantes dos dados do candidato.
     
     Args:
-        candidate_data: Raw candidate data from JSON
+        candidate_data: Dados brutos do candidato do JSON
         
     Returns:
-        Dictionary with extracted candidate features
+        Dicionário com características extraídas do candidato
     """
     infos_basicas = candidate_data.get('infos_basicas', {})
     infos_pessoais = candidate_data.get('informacoes_pessoais', {})
@@ -500,13 +500,13 @@ def extract_candidate_features(candidate_data: Dict) -> Dict:
 
 
 def extract_job_features(job_data: Dict) -> Dict:
-    """Extract relevant features from job data.
+    """Extrai características relevantes dos dados da vaga.
     
     Args:
-        job_data: Raw job data from JSON
+        job_data: Dados brutos da vaga do JSON
         
     Returns:
-        Dictionary with extracted job features
+        Dicionário com características extraídas da vaga
     """
     infos_basicas = job_data.get('informacoes_basicas', {})
     perfil_vaga = job_data.get('perfil_vaga', {})
@@ -532,13 +532,13 @@ def extract_job_features(job_data: Dict) -> Dict:
 
 
 def determine_match_quality(prospect_status: str) -> str:
-    """Determine match quality based on prospect status.
+    """Determina a qualidade do match baseado no status do prospect.
     
     Args:
-        prospect_status: Status of the candidate in the recruitment process
+        prospect_status: Status do candidato no processo de recrutamento
         
     Returns:
-        Match quality: 'good_match' or 'poor_match'
+        Qualidade do match: 'good_match' ou 'poor_match'
     """
     good_statuses = [
         'Contratado pela Decision',
@@ -554,14 +554,14 @@ def determine_match_quality(prospect_status: str) -> str:
 
 
 def calculate_real_match_score(candidate: Dict, job: Dict) -> float:
-    """Calculate compatibility score between candidate and job for real data.
+    """Calcula o score de compatibilidade entre candidato e vaga para dados reais.
     
     Args:
-        candidate: Candidate data dictionary
-        job: Job data dictionary
+        candidate: Dicionário de dados do candidato
+        job: Dicionário de dados da vaga
         
     Returns:
-        Match score between 0 and 1
+        Score de match entre 0 e 1
     """
     score = 0.0
     total_weight = 0.0
@@ -625,26 +625,26 @@ def calculate_match_score(
     remote_work: bool, remote_allowed: bool, availability: int, 
     urgency: int, education: str
 ) -> float:
-    """Calculate match score based on various factors.
+    """Calcula o score de compatibilidade baseado em vários fatores.
     
     Args:
-        years_exp: Candidate years of experience
-        req_exp_level: Required experience level
-        candidate_skills: List of candidate skills
-        req_skills: List of required skills
-        salary_exp: Candidate salary expectation
-        salary_min: Job minimum salary
-        salary_max: Job maximum salary
-        location: Candidate location
-        job_location: Job location
-        remote_work: Candidate accepts remote work
-        remote_allowed: Job allows remote work
-        availability: Candidate availability in days
-        urgency: Job urgency in days
-        education: Candidate education level
+        years_exp: Anos de experiência do candidato
+        req_exp_level: Nível de experiência necessário
+        candidate_skills: Lista de habilidades do candidato
+        req_skills: Lista de habilidades necessárias
+        salary_exp: Expectativa salarial do candidato
+        salary_min: Salário mínimo da vaga
+        salary_max: Salário máximo da vaga
+        location: Localização do candidato
+        job_location: Localização da vaga
+        remote_work: Candidato aceita trabalho remoto
+        remote_allowed: Vaga permite trabalho remoto
+        availability: Disponibilidade do candidato em dias
+        urgency: Urgência da vaga em dias
+        education: Nível de educação do candidato
         
     Returns:
-        Match score between 0 and 1
+        Score de match entre 0 e 1
     """
     score = 0.0
     
@@ -713,7 +713,7 @@ def calculate_match_score(
 
 
 def normalize_education_level(education: str) -> str:
-    """Normalize education level to standard format."""
+    """Normaliza o nível de educação para formato padrão."""
     education = education.lower().strip()
     if 'doutorado' in education or 'phd' in education:
         return 'Doutorado'
@@ -728,7 +728,7 @@ def normalize_education_level(education: str) -> str:
 
 
 def normalize_language_level(level: str) -> str:
-    """Normalize language level to standard format."""
+    """Normaliza o nível de idioma para formato padrão."""
     level = level.lower().strip()
     if 'fluente' in level or 'nativo' in level:
         return 'Fluente'
@@ -743,7 +743,7 @@ def normalize_language_level(level: str) -> str:
 
 
 def normalize_area(area: str) -> str:
-    """Normalize area of expertise to standard format."""
+    """Normaliza a área de especialização para formato padrão."""
     area = area.lower().strip()
     if 'desenvolvimento' in area or 'programação' in area:
         return 'Desenvolvimento'
@@ -766,7 +766,7 @@ def normalize_area(area: str) -> str:
 
 
 def extract_experience_from_cv(cv_text: str) -> int:
-    """Extract years of experience from CV text."""
+    """Extrai os anos de experiência do currículo."""
     if not cv_text:
         return 0
     
@@ -790,7 +790,7 @@ def extract_experience_from_cv(cv_text: str) -> int:
 
 
 def extract_skills_from_text(text: str) -> str:
-    """Extract technical skills from text."""
+    """Extrai as habilidades técnicas do texto."""
     if not text:
         return ''
     
@@ -813,7 +813,7 @@ def extract_skills_from_text(text: str) -> str:
 
 
 def extract_salary(salary_text: str) -> float:
-    """Extract salary expectation from text."""
+    """Extrai a expectativa salarial do texto."""
     if not salary_text:
         return 8000.0  # default
     
@@ -830,7 +830,7 @@ def extract_salary(salary_text: str) -> float:
 
 
 def extract_location(address: str) -> str:
-    """Extract city from address."""
+    """Extrai a cidade do endereço."""
     if not address:
         return 'São Paulo'
     
@@ -844,7 +844,7 @@ def extract_location(address: str) -> str:
 
 
 def extract_required_experience(job_description: str) -> int:
-    """Extract required years of experience from job description."""
+    """Extrai os anos de experiência requeridos da descrição do job."""
     if not job_description:
         return 3  # default
     
@@ -872,7 +872,7 @@ def extract_required_experience(job_description: str) -> int:
 
 
 def convert_to_model_format(candidate: Dict, job: Dict, match_score: float, match_label: str) -> Dict:
-    """Convert real data to the format expected by the model."""
+    """Converte os dados reais para o formato esperado pelo modelo."""
     # Mapeia níveis educacionais para valores numéricos
     education_mapping = {
         'Ensino Médio': 1,
@@ -944,17 +944,17 @@ def convert_to_model_format(candidate: Dict, job: Dict, match_score: float, matc
 
 
 def load_and_validate_data(file_path: str) -> pd.DataFrame:
-    """Load and validate training data.
+    """Carrega e valida os dados de treinamento.
     
     Args:
-        file_path: Path to the data file
+        file_path: Caminho para o arquivo de dados
         
     Returns:
-        Validated DataFrame
+        DataFrame validado
         
     Raises:
-        ValueError: If data validation fails
-        FileNotFoundError: If file doesn't exist and can't be created
+        ValueError: Se a validação dos dados falhar
+        FileNotFoundError: Se o arquivo não existir e não puder ser criado
     """
     try:
         file_path = Path(file_path)
@@ -1014,15 +1014,15 @@ def split_data(
     test_size: float = 0.2, 
     random_state: int = 42
 ) -> Tuple[pd.DataFrame, pd.DataFrame]:
-    """Split data into train and test sets.
+    """Divide os dados em conjuntos de treinamento e teste.
     
     Args:
-        df: Input DataFrame
-        test_size: Proportion of test set
-        random_state: Random seed
+        df: DataFrame de entrada
+        test_size: Proporção do conjunto de teste
+        random_state: Semente aleatória
         
     Returns:
-        Tuple of (train_df, test_df)
+        Tupla de (train_df, test_df)
     """
     # Features para treinamento (exclui colunas target e metadados)
     feature_cols = [
@@ -1061,10 +1061,10 @@ def split_data(
 
 
 def create_sample_payload(output_path: str) -> None:
-    """Create sample JSON payload for API testing.
+    """Cria um payload JSON de amostra para testes da API.
     
     Args:
-        output_path: Path to save the sample payload
+        output_path: Caminho para salvar o payload de amostra
     """
     sample_payload = {
         "candidate": {
@@ -1119,6 +1119,6 @@ if __name__ == "__main__":
     # Cria payload de amostra
     create_sample_payload(data_dir / "sample_payload.json")
     
-    print(f"Generated {len(df)} samples")
-    print(f"Label distribution: {df['match_label'].value_counts()}")
+    print(f"Geradas {len(df)} amostras")
+    print(f"Distribuição de labels: {df['match_label'].value_counts()}")
     logger.info("Geração de dados concluída com sucesso!")

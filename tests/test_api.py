@@ -1,4 +1,4 @@
-"""Tests for FastAPI application."""
+"""Testes para a aplicação FastAPI."""
 
 import pytest
 import json
@@ -16,13 +16,13 @@ from src.schema import PredictionRequest, CandidateInput, JobRequirements
 
 @pytest.fixture
 def client():
-    """Create test client."""
+    """Cria um cliente de teste."""
     return TestClient(app)
 
 
 @pytest.fixture
 def sample_prediction_request():
-    """Sample prediction request data."""
+    """Dados de amostra para testes de previsão."""
     return {
         "candidate": {
             "age": 28,
@@ -49,7 +49,7 @@ def sample_prediction_request():
 
 @pytest.fixture
 def mock_model():
-    """Mock trained model."""
+    """Mock de um modelo treinado."""
     model = MagicMock()
     model.predict.return_value = np.array(['good_match'])
     model.predict_proba.return_value = np.array([[0.3, 0.7]])
@@ -58,10 +58,10 @@ def mock_model():
 
 
 class TestHealthEndpoint:
-    """Test health check endpoint."""
+    """Testes para o endpoint de saúde."""
     
     def test_health_check_without_model(self, client):
-        """Test health check when model is not loaded."""
+        """Testa a verificação de saúde quando o modelo não está carregado."""
         with patch('app.main.model', None):
             response = client.get("/health")
             
@@ -75,7 +75,7 @@ class TestHealthEndpoint:
             assert "uptime_seconds" in data
     
     def test_health_check_with_model(self, client, mock_model):
-        """Test health check when model is loaded."""
+        """Testa a verificação de saúde quando o modelo está carregado."""
         with patch('app.main.model', mock_model):
             response = client.get("/health")
             
@@ -88,10 +88,10 @@ class TestHealthEndpoint:
 
 
 class TestRootEndpoint:
-    """Test root endpoint."""
+    """Testes para o endpoint raiz."""
     
     def test_root_endpoint(self, client):
-        """Test root endpoint returns HTML."""
+        """Testa o endpoint raiz retorna HTML."""
         response = client.get("/")
         
         assert response.status_code == 200
@@ -102,10 +102,10 @@ class TestRootEndpoint:
 
 
 class TestPredictEndpoint:
-    """Test prediction endpoint."""
+    """Testes para o endpoint de previsão."""
     
     def test_predict_without_model(self, client, sample_prediction_request):
-        """Test prediction when model is not loaded."""
+        """Testa a previsão quando o modelo não está carregado."""
         with patch('app.main.model', None):
             response = client.post("/predict", json=sample_prediction_request)
             
@@ -113,7 +113,7 @@ class TestPredictEndpoint:
             assert "Model not available" in response.json()["detail"]
     
     def test_predict_with_model(self, client, sample_prediction_request, mock_model):
-        """Test successful prediction."""
+        """Testa predição bem-sucedida."""
         with patch('app.main.model', mock_model):
             response = client.post("/predict", json=sample_prediction_request)
             
@@ -136,12 +136,12 @@ class TestPredictEndpoint:
             assert isinstance(data["recommendation"], str)
     
     def test_predict_invalid_request(self, client):
-        """Test prediction with invalid request data."""
+        """Testa predição com dados inválidos."""
         invalid_request = {
             "candidate": {
-                "age": -5,  # Invalid age
-                "education_level": "invalid",  # Invalid education level
-                "skills": []  # Empty skills list
+                "age": -5,  # Idade inválida
+                "education_level": "invalid",  # Nível de educação inválido
+                "skills": []  # Lista de habilidades vazia
             }
         }
         
@@ -150,7 +150,7 @@ class TestPredictEndpoint:
         assert response.status_code == 422  # Validation error
     
     def test_predict_missing_fields(self, client):
-        """Test prediction with missing required fields."""
+        """Testa predição com campos obrigatórios ausentes."""
         incomplete_request = {
             "candidate": {
                 "age": 28
@@ -163,27 +163,27 @@ class TestPredictEndpoint:
         assert response.status_code == 422
     
     def test_predict_edge_cases(self, client, mock_model):
-        """Test prediction with edge case values."""
+        """Testa predição com valores de caso limite."""
         edge_case_request = {
             "candidate": {
-                "age": 18,  # Minimum age
+                "age": 18,  # Idade mínima
                 "education_level": "high_school",
-                "years_experience": 0,  # Minimum experience
+                "years_experience": 0,  # Experiência mínima
                 "skills": ["basic skill"],
                 "previous_companies": 0,
-                "salary_expectation": 1,  # Very low salary
+                "salary_expectation": 1,  # Salário muito baixo
                 "location": "Remote",
                 "remote_work": True,
-                "availability_days": 1  # Immediate availability
+                "availability_days": 1  # Disponibilidade imediata
             },
             "job": {
                 "required_experience": "junior",
                 "required_skills": ["any skill"],
                 "salary_range_min": 1,
-                "salary_range_max": 1000000,  # Very high range
+                "salary_range_max": 1000000,  # Faixa salarial muito alta
                 "location": "Anywhere",
                 "remote_allowed": True,
-                "urgency_days": 365  # Not urgent
+                "urgency_days": 365  # Não urgente
             }
         }
         
@@ -193,7 +193,7 @@ class TestPredictEndpoint:
             assert response.status_code == 200
     
     def test_predict_model_error(self, client, sample_prediction_request):
-        """Test prediction when model raises an error."""
+        """Testa predição quando o modelo levanta um erro."""
         error_model = MagicMock()
         error_model.predict.side_effect = Exception("Model error")
         
@@ -205,10 +205,10 @@ class TestPredictEndpoint:
 
 
 class TestMetricsEndpoint:
-    """Test metrics endpoint."""
+    """Testes para o endpoint de métricas."""
     
     def test_metrics_basic(self, client):
-        """Test basic metrics retrieval."""
+        """Testa recuperação básica de métricas."""
         response = client.get("/metrics")
         
         assert response.status_code == 200
@@ -229,26 +229,26 @@ class TestMetricsEndpoint:
         assert isinstance(data["system_health"], str)
     
     def test_metrics_with_predictions(self, client, sample_prediction_request, mock_model):
-        """Test metrics after making predictions."""
+        """Testa métricas após fazer predições."""
         with patch('app.main.model', mock_model):
-            # Make a prediction first
+            # Fazer uma predição primeiro
             client.post("/predict", json=sample_prediction_request)
             
-            # Check metrics
+            # Verificar métricas
             response = client.get("/metrics")
             
             assert response.status_code == 200
             data = response.json()
             
-            # Should have at least one prediction
+            # Deve ter pelo menos uma predição
             assert data["total_predictions"] >= 1
 
 
 class TestDriftReportEndpoint:
-    """Test drift report endpoint."""
+    """Testes para o endpoint de relatório de drift."""
     
     def test_drift_report_not_found(self, client):
-        """Test drift report when file doesn't exist."""
+        """Testa relatório de drift quando o arquivo não existe."""
         with patch('pathlib.Path.exists', return_value=False):
             response = client.get("/drift-report")
             
@@ -256,9 +256,9 @@ class TestDriftReportEndpoint:
             assert "Drift report not found" in response.json()["detail"]
     
     def test_drift_report_exists(self, client):
-        """Test drift report when file exists."""
+        """Testa relatório de drift quando o arquivo existe."""
         with tempfile.TemporaryDirectory() as temp_dir:
-            # Create a dummy report file
+            # Cria um arquivo de relatório dummy
             report_path = Path(temp_dir) / "drift.html"
             report_content = "<html><body>Test Report</body></html>"
             
@@ -275,10 +275,10 @@ class TestDriftReportEndpoint:
 
 
 class TestRequestValidation:
-    """Test request validation."""
+    """Testes para validação de requisições."""
     
     def test_candidate_age_validation(self, client):
-        """Test candidate age validation."""
+        """Testa validação de idade do candidato."""
         invalid_ages = [-1, 17, 71, 150]
         
         for age in invalid_ages:
@@ -309,7 +309,7 @@ class TestRequestValidation:
             assert response.status_code == 422
     
     def test_skills_validation(self, client):
-        """Test skills validation."""
+        """Testa validação de habilidades do candidato."""
         # Empty skills list
         request_data = {
             "candidate": {
@@ -338,7 +338,7 @@ class TestRequestValidation:
         assert response.status_code == 422
     
     def test_salary_range_validation(self, client):
-        """Test salary range validation."""
+        """Testa validação de faixa salarial."""
         # Max salary less than min salary
         request_data = {
             "candidate": {
@@ -368,10 +368,10 @@ class TestRequestValidation:
 
 
 class TestConcurrency:
-    """Test API under concurrent load."""
+    """Testes para concorrência na API."""
     
     def test_concurrent_predictions(self, client, sample_prediction_request, mock_model):
-        """Test multiple concurrent predictions."""
+        """Testa previsões concorrentes."""
         import threading
         import time
         
@@ -386,17 +386,17 @@ class TestConcurrency:
                 errors.append(str(e))
         
         with patch('app.main.model', mock_model):
-            # Create multiple threads
+            # Cria múltiplas threads
             threads = []
             for _ in range(10):
                 thread = threading.Thread(target=make_prediction)
                 threads.append(thread)
             
-            # Start all threads
+            # Inicia todas as threads
             for thread in threads:
                 thread.start()
             
-            # Wait for all threads to complete
+            # Aguarda todas as threads completarem  
             for thread in threads:
                 thread.join()
         
@@ -406,15 +406,15 @@ class TestConcurrency:
 
 
 class TestLogging:
-    """Test logging functionality."""
+    """Testes para funcionalidade de logging."""
     
     def test_request_logging(self, client):
-        """Test that requests are logged."""
+        """Testa logging de requisições."""
         with patch('app.main.logger') as mock_logger:
             response = client.get("/health")
             
             assert response.status_code == 200
-            # Verify that logging was called
+            # Verifica se o logging foi chamado
             mock_logger.info.assert_called()
 
 

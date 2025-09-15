@@ -1,66 +1,66 @@
-# Multi-stage Dockerfile for Decision AI Recruitment System
+# Dockerfile multi-estágio para Sistema de IA de Recrutamento Decision
 
-# Stage 1: Build stage
+# Estágio 1: Estágio de construção
 FROM python:3.11-slim as builder
 
-# Set environment variables
+# Define variáveis de ambiente
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1
 
-# Install system dependencies
+# Instala dependências do sistema
 RUN apt-get update && apt-get install -y \
     build-essential \
     gcc \
     g++ \
     && rm -rf /var/lib/apt/lists/*
 
-# Create and set working directory
+# Cria e define diretório de trabalho
 WORKDIR /app
 
-# Copy requirements first for better caching
+# Copia requirements primeiro para melhor cache
 COPY requirements.txt .
 
-# Install Python dependencies
+# Instala dependências Python
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy source code
+# Copia código fonte
 COPY . .
 
-# Create necessary directories
+# Cria diretórios necessários
 RUN mkdir -p logs models reports data
 
-# Generate synthetic data and train model
+# Gera dados sintéticos e treina modelo
 RUN python -m src.data && \
     python -m src.train --data-path data/sample_candidates.csv --model-path models/model.joblib
 
-# Stage 2: Production stage
+# Estágio 2: Estágio de produção
 FROM python:3.11-slim as production
 
-# Set environment variables
+# Define variáveis de ambiente
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PATH="/app/.local/bin:$PATH" \
     PYTHONPATH="/app"
 
-# Install runtime dependencies only
+# Instala apenas dependências de execução
 RUN apt-get update && apt-get install -y \
     curl \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 
-# Create non-root user
+# Cria usuário não-root
 RUN groupadd -r appuser && useradd -r -g appuser appuser
 
-# Create and set working directory
+# Cria e define diretório de trabalho
 WORKDIR /app
 
-# Copy Python dependencies from builder stage
+# Copia dependências Python do estágio de construção
 COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
 COPY --from=builder /usr/local/bin /usr/local/bin
 
-# Copy application code and generated files
+# Copia código da aplicação e arquivos gerados
 COPY --from=builder /app/src ./src
 COPY --from=builder /app/app ./app
 COPY --from=builder /app/monitor ./monitor
@@ -69,19 +69,19 @@ COPY --from=builder /app/data ./data
 COPY --from=builder /app/requirements.txt .
 COPY --from=builder /app/pyproject.toml .
 
-# Create directories and set permissions
+# Cria diretórios e define permissões
 RUN mkdir -p logs reports && \
     chown -R appuser:appuser /app
 
-# Switch to non-root user
+# Muda para usuário não-root
 USER appuser
 
-# Health check
+# Verificação de saúde
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 
-# Expose port
+# Expõe porta
 EXPOSE 8000
 
-# Default command
+# Comando padrão
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]

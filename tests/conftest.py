@@ -1,4 +1,4 @@
-"""Pytest configuration and shared fixtures."""
+"""Configuração do Pytest e fixtures compartilhadas."""
 
 import pytest
 import tempfile
@@ -15,14 +15,14 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 @pytest.fixture(scope="session")
 def temp_dir():
-    """Create a temporary directory for test files."""
+    """Cria um diretório temporário para arquivos de teste."""
     with tempfile.TemporaryDirectory() as temp_dir:
         yield temp_dir
 
 
 @pytest.fixture
 def sample_data():
-    """Create sample training data for tests."""
+    """Cria dados de treinamento de amostra para testes."""
     np.random.seed(42)
     
     data = {
@@ -48,7 +48,7 @@ def sample_data():
 
 @pytest.fixture
 def sample_csv_file(temp_dir, sample_data):
-    """Create a sample CSV file for testing."""
+    """Cria um arquivo CSV de amostra para testes."""
     file_path = os.path.join(temp_dir, 'sample_data.csv')
     sample_data.to_csv(file_path, index=False)
     return file_path
@@ -56,7 +56,7 @@ def sample_csv_file(temp_dir, sample_data):
 
 @pytest.fixture
 def mock_trained_model():
-    """Create a mock trained model for testing."""
+    """Cria um modelo treinado fictício para testes."""
     model = MagicMock()
     model.predict.return_value = np.array(['good_match', 'poor_match'])
     model.predict_proba.return_value = np.array([[0.3, 0.7], [0.8, 0.2]])
@@ -66,7 +66,7 @@ def mock_trained_model():
 
 @pytest.fixture
 def sample_prediction_data():
-    """Sample data for prediction testing."""
+    """Dados de amostra para testes de previsão."""
     return {
         'candidate': {
             'age': 28,
@@ -93,7 +93,7 @@ def sample_prediction_data():
 
 @pytest.fixture(autouse=True)
 def setup_test_environment(monkeypatch):
-    """Setup test environment variables."""
+    """Configura o ambiente de teste com variáveis de ambiente."""
     monkeypatch.setenv("MODEL_PATH", "test_models/model.joblib")
     monkeypatch.setenv("API_HOST", "127.0.0.1")
     monkeypatch.setenv("API_PORT", "8001")
@@ -103,10 +103,10 @@ def setup_test_environment(monkeypatch):
 
 @pytest.fixture
 def clean_logs():
-    """Clean up log files after tests."""
+    """Limpa arquivos de log após os testes."""
     yield
     
-    # Clean up any log files created during tests
+    # Limpa qualquer arquivo de log criado durante os testes
     log_files = [
         'logs/api.log',
         'logs/predictions.csv',
@@ -121,32 +121,32 @@ def clean_logs():
                 pass
 
 
-# Configure pytest markers
+# Configuração do pytest markers
 def pytest_configure(config):
-    """Configure pytest markers."""
+    """Configura pytest markers."""
     config.addinivalue_line(
-        "markers", "slow: marks tests as slow (deselect with '-m \"not slow\"')"
+        "markers", "slow: marca testes como lentos (desmarque com '-m \"not slow\"')"
     )
     config.addinivalue_line(
-        "markers", "integration: marks tests as integration tests"
+        "markers", "integration: marca testes como de integração"
     )
     config.addinivalue_line(
-        "markers", "unit: marks tests as unit tests"
+        "markers", "unit: marca testes como unitários"
     )
 
 
 # Custom test collection
 def pytest_collection_modifyitems(config, items):
-    """Modify test collection to add markers automatically."""
+    """Modifica a coleção de testes para adicionar marcadores automaticamente."""
     for item in items:
-        # Mark slow tests
+        # Marca testes lentos
         if "slow" in item.nodeid or "integration" in item.nodeid:
             item.add_marker(pytest.mark.slow)
         
-        # Mark unit tests
+        # Marca testes unitários
         if "test_" in item.name and "integration" not in item.nodeid:
             item.add_marker(pytest.mark.unit)
         
-        # Mark integration tests
+        # Marca testes de integração
         if "integration" in item.nodeid or "test_api" in item.nodeid:
             item.add_marker(pytest.mark.integration)
