@@ -136,12 +136,12 @@ class TestPredictEndpoint:
             assert isinstance(data["recommendation"], str)
     
     def test_predict_invalid_request(self, client):
-        """Testa predição com dados inválidos."""
+        """Test prediction with invalid request data."""
         invalid_request = {
             "candidate": {
-                "age": -5,  # Idade inválida
-                "education_level": "invalid",  # Nível de educação inválido
-                "skills": []  # Lista de habilidades vazia
+                "age": -5,  # Invalid age
+                "education_level": "invalid",  # Invalid education level
+                "skills": []  # Empty skills list
             }
         }
         
@@ -150,7 +150,7 @@ class TestPredictEndpoint:
         assert response.status_code == 422  # Validation error
     
     def test_predict_missing_fields(self, client):
-        """Testa predição com campos obrigatórios ausentes."""
+        """Test prediction with missing required fields."""
         incomplete_request = {
             "candidate": {
                 "age": 28
@@ -163,27 +163,27 @@ class TestPredictEndpoint:
         assert response.status_code == 422
     
     def test_predict_edge_cases(self, client, mock_model):
-        """Testa predição com valores de caso limite."""
+        """Test prediction with edge case values."""
         edge_case_request = {
             "candidate": {
-                "age": 18,  # Idade mínima
+                "age": 18,  # Minimum age
                 "education_level": "high_school",
-                "years_experience": 0,  # Experiência mínima
+                "years_experience": 0,  # Minimum experience
                 "skills": ["basic skill"],
                 "previous_companies": 0,
-                "salary_expectation": 1,  # Salário muito baixo
+                "salary_expectation": 1,  # Very low salary
                 "location": "Remote",
                 "remote_work": True,
-                "availability_days": 1  # Disponibilidade imediata
+                "availability_days": 1  # Immediate availability
             },
             "job": {
                 "required_experience": "junior",
                 "required_skills": ["any skill"],
                 "salary_range_min": 1,
-                "salary_range_max": 1000000,  # Faixa salarial muito alta
+                "salary_range_max": 1000000,  # Very high range
                 "location": "Anywhere",
                 "remote_allowed": True,
-                "urgency_days": 365  # Não urgente
+                "urgency_days": 365  # Not urgent
             }
         }
         
@@ -193,7 +193,7 @@ class TestPredictEndpoint:
             assert response.status_code == 200
     
     def test_predict_model_error(self, client, sample_prediction_request):
-        """Testa predição quando o modelo levanta um erro."""
+        """Test prediction when model raises an error."""
         error_model = MagicMock()
         error_model.predict.side_effect = Exception("Model error")
         
@@ -205,10 +205,10 @@ class TestPredictEndpoint:
 
 
 class TestMetricsEndpoint:
-    """Testes para o endpoint de métricas."""
+    """Test metrics endpoint."""
     
     def test_metrics_basic(self, client):
-        """Testa recuperação básica de métricas."""
+        """Test basic metrics retrieval."""
         response = client.get("/metrics")
         
         assert response.status_code == 200
@@ -229,26 +229,26 @@ class TestMetricsEndpoint:
         assert isinstance(data["system_health"], str)
     
     def test_metrics_with_predictions(self, client, sample_prediction_request, mock_model):
-        """Testa métricas após fazer predições."""
+        """Test metrics after making predictions."""
         with patch('app.main.model', mock_model):
-            # Fazer uma predição primeiro
+            # Make a prediction first
             client.post("/predict", json=sample_prediction_request)
             
-            # Verificar métricas
+            # Check metrics
             response = client.get("/metrics")
             
             assert response.status_code == 200
             data = response.json()
             
-            # Deve ter pelo menos uma predição
+            # Should have at least one prediction
             assert data["total_predictions"] >= 1
 
 
 class TestDriftReportEndpoint:
-    """Testes para o endpoint de relatório de drift."""
+    """Test drift report endpoint."""
     
     def test_drift_report_not_found(self, client):
-        """Testa relatório de drift quando o arquivo não existe."""
+        """Test drift report when file doesn't exist."""
         with patch('pathlib.Path.exists', return_value=False):
             response = client.get("/drift-report")
             
@@ -256,9 +256,9 @@ class TestDriftReportEndpoint:
             assert "Drift report not found" in response.json()["detail"]
     
     def test_drift_report_exists(self, client):
-        """Testa relatório de drift quando o arquivo existe."""
+        """Test drift report when file exists."""
         with tempfile.TemporaryDirectory() as temp_dir:
-            # Cria um arquivo de relatório dummy
+            # Create a dummy report file
             report_path = Path(temp_dir) / "drift.html"
             report_content = "<html><body>Test Report</body></html>"
             
@@ -275,10 +275,10 @@ class TestDriftReportEndpoint:
 
 
 class TestRequestValidation:
-    """Testes para validação de requisições."""
+    """Test request validation."""
     
     def test_candidate_age_validation(self, client):
-        """Testa validação de idade do candidato."""
+        """Test candidate age validation."""
         invalid_ages = [-1, 17, 71, 150]
         
         for age in invalid_ages:
@@ -309,7 +309,7 @@ class TestRequestValidation:
             assert response.status_code == 422
     
     def test_skills_validation(self, client):
-        """Testa validação de habilidades do candidato."""
+        """Test skills validation."""
         # Empty skills list
         request_data = {
             "candidate": {
@@ -338,7 +338,7 @@ class TestRequestValidation:
         assert response.status_code == 422
     
     def test_salary_range_validation(self, client):
-        """Testa validação de faixa salarial."""
+        """Test salary range validation."""
         # Max salary less than min salary
         request_data = {
             "candidate": {
@@ -368,10 +368,10 @@ class TestRequestValidation:
 
 
 class TestConcurrency:
-    """Testes para concorrência na API."""
+    """Test API under concurrent load."""
     
     def test_concurrent_predictions(self, client, sample_prediction_request, mock_model):
-        """Testa previsões concorrentes."""
+        """Test multiple concurrent predictions."""
         import threading
         import time
         
@@ -386,17 +386,17 @@ class TestConcurrency:
                 errors.append(str(e))
         
         with patch('app.main.model', mock_model):
-            # Cria múltiplas threads
+            # Create multiple threads
             threads = []
             for _ in range(10):
                 thread = threading.Thread(target=make_prediction)
                 threads.append(thread)
             
-            # Inicia todas as threads
+            # Start all threads
             for thread in threads:
                 thread.start()
             
-            # Aguarda todas as threads completarem  
+            # Wait for all threads to complete
             for thread in threads:
                 thread.join()
         
@@ -406,15 +406,15 @@ class TestConcurrency:
 
 
 class TestLogging:
-    """Testes para funcionalidade de logging."""
+    """Test logging functionality."""
     
     def test_request_logging(self, client):
-        """Testa logging de requisições."""
+        """Test that requests are logged."""
         with patch('app.main.logger') as mock_logger:
             response = client.get("/health")
             
             assert response.status_code == 200
-            # Verifica se o logging foi chamado
+            # Verify that logging was called
             mock_logger.info.assert_called()
 
 
