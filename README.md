@@ -68,20 +68,7 @@ O Decision AI é uma solução completa de machine learning para automatizar o p
 
 ## 🏗️ Arquitetura
 
-```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Frontend/     │    │   Aplicação     │    │   Pipeline ML   │
-│   Postman       │───▶│   FastAPI       │───▶│   (sklearn)     │
-│                 │    │                 │    │                 │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-                                │                        │
-                                ▼                        ▼
-                       ┌─────────────────┐    ┌─────────────────┐
-                       │   Monitoramento │    │ Armazenamento   │
-                       │   (Evidently)   │    │   de Dados      │
-                       └─────────────────┘    │   (CSV/Joblib)  │
-                                              └─────────────────┘
-```
+![](https://github.com/rodrigorizandobr/tech-challenger-5/blob/main/arquitetura.png?raw=true)
 
 ### Stack Tecnológica
 
