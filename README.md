@@ -8,6 +8,10 @@
 
 Um sistema de IA para recrutamento e seleção que utiliza machine learning para fazer match entre candidatos e vagas, desenvolvido para o Tech Challenge 5 da FIAP.
 
+### LINK do Vídeo no YOUTUBE
+
+[![Assista o vídeo](https://img.youtube.com/vi/fVqxCb86rl4/maxresdefault.jpg)](https://www.youtube.com/watch?v=fVqxCb86rl4)
+
 ## 📋 Índice
 
 - [Visão Geral](#-visão-geral)
